@@ -24,7 +24,7 @@ export default function CostChart({
   currency?: string;
 }) {
   const pieData = [
-    { name: "Fuel", value: data.fuel.monthly },
+    { name: data.fuel.label, value: data.fuel.monthly },
     { name: "Maintenance", value: data.maintenance.monthly },
     { name: "Insurance", value: data.insurance.monthly },
     { name: "Government", value: data.government.monthly },

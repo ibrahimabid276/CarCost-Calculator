@@ -51,6 +51,7 @@ export interface FuelEstimate extends EstimateBlock {
   pricePerUnit: number;
   economy: number;
   unit: string; // "km/L" or "km/kWh"
+  label: string; // "Fuel" or "Electricity" — use this instead of hardcoding "Fuel" in the UI
 }
 
 export interface CarCostResponse {

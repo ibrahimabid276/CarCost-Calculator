@@ -5,7 +5,7 @@ function fmt(n: number, currency: string) {
 }
 
 const CARDS = [
-  { key: "fuel" as const, label: "Fuel" },
+  { key: "fuel" as const, label: null }, // resolved from data.fuel.label (Fuel vs Electricity)
   { key: "maintenance" as const, label: "Maintenance" },
   { key: "insurance" as const, label: "Insurance" },
   { key: "government" as const, label: "Government" },
@@ -37,9 +37,10 @@ export default function ResultsCard({
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {CARDS.map(({ key, label }) => {
           const block = data[key];
+          const displayLabel = label ?? data.fuel.label;
           return (
             <div key={key} className="card p-5">
-              <p className="text-sm text-ink/50">{label}</p>
+              <p className="text-sm text-ink/50">{displayLabel}</p>
               <p className="mt-1 text-xl font-semibold font-mono">
                 {fmt(block.monthly, currency)}
                 <span className="text-xs font-body text-ink/40">/mo</span>

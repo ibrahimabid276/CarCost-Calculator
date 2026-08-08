@@ -21,19 +21,19 @@ interface Props {
 }
 
 export default function CarForm({ onSubmit, submitting }: Props) {
-  const [make, setMake] = useState("Toyota");
-  const [model, setModel] = useState("Corolla");
-  const [variant, setVariant] = useState("1.6");
-  const [modelYear, setModelYear] = useState("2023");
-  const [engineSize, setEngineSize] = useState("1.6L");
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [variant, setVariant] = useState("");
+  const [modelYear, setModelYear] = useState("");
+  const [engineSize, setEngineSize] = useState("");
   const [fuelType, setFuelType] = useState<FuelType>("Petrol");
 
   const [country, setCountry] = useState("Pakistan");
   const [city, setCity] = useState("Lahore");
   const [customCity, setCustomCity] = useState("");
 
-  const [dailyKm, setDailyKm] = useState(30);
-  const [drivingDaysPerMonth, setDrivingDaysPerMonth] = useState(26);
+  const [dailyKm, setDailyKm] = useState<number | "">("");
+  const [drivingDaysPerMonth, setDrivingDaysPerMonth] = useState<number | "">("");
   const [fuelEconomyMode, setFuelEconomyMode] = useState<"auto" | "manual">("auto");
   const [manualFuelEconomy, setManualFuelEconomy] = useState<number | "">("");
   const [manualFuelPrice, setManualFuelPrice] = useState<number | "">("");
@@ -45,8 +45,8 @@ export default function CarForm({ onSubmit, submitting }: Props) {
   const [isFinancing, setIsFinancing] = useState(false);
   const [vehiclePrice, setVehiclePrice] = useState<number | "">("");
   const [downPayment, setDownPayment] = useState<number | "">("");
-  const [interestRate, setInterestRate] = useState<number | "">(15);
-  const [loanDurationYears, setLoanDurationYears] = useState<number | "">(5);
+  const [interestRate, setInterestRate] = useState<number | "">("");
+  const [loanDurationYears, setLoanDurationYears] = useState<number | "">("");
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -58,8 +58,8 @@ export default function CarForm({ onSubmit, submitting }: Props) {
       setFormError("Please enter both a make and model.");
       return;
     }
-    if (dailyKm <= 0 || drivingDaysPerMonth <= 0) {
-      setFormError("Daily kilometers and driving days must be greater than zero.");
+    if (dailyKm === "" || drivingDaysPerMonth === "" || dailyKm <= 0 || drivingDaysPerMonth <= 0) {
+      setFormError("Please enter your daily kilometers and driving days per month.");
       return;
     }
     if (isFinancing && !vehiclePrice) {
@@ -76,8 +76,8 @@ export default function CarForm({ onSubmit, submitting }: Props) {
       fuelType,
       country,
       city: city === "Other" ? customCity || "Other" : city,
-      dailyKm,
-      drivingDaysPerMonth,
+      dailyKm: Number(dailyKm),
+      drivingDaysPerMonth: Number(drivingDaysPerMonth),
       fuelEconomyMode,
       manualFuelEconomy: manualFuelEconomy === "" ? undefined : Number(manualFuelEconomy),
       manualFuelPrice: manualFuelPrice === "" ? undefined : Number(manualFuelPrice),
@@ -175,8 +175,9 @@ export default function CarForm({ onSubmit, submitting }: Props) {
             <input
               type="number"
               className="field-input"
+              placeholder="e.g. 30"
               value={dailyKm}
-              onChange={(e) => setDailyKm(Number(e.target.value))}
+              onChange={(e) => setDailyKm(e.target.value === "" ? "" : Number(e.target.value))}
               min={1}
             />
           </div>
@@ -185,8 +186,9 @@ export default function CarForm({ onSubmit, submitting }: Props) {
             <input
               type="number"
               className="field-input"
+              placeholder="e.g. 26"
               value={drivingDaysPerMonth}
-              onChange={(e) => setDrivingDaysPerMonth(Number(e.target.value))}
+              onChange={(e) => setDrivingDaysPerMonth(e.target.value === "" ? "" : Number(e.target.value))}
               min={1}
               max={31}
             />
@@ -307,19 +309,19 @@ export default function CarForm({ onSubmit, submitting }: Props) {
           <div className="grid sm:grid-cols-2 gap-5">
             <div>
               <label className="field-label">Vehicle price</label>
-              <input type="number" className="field-input" value={vehiclePrice} onChange={(e) => setVehiclePrice(e.target.value === "" ? "" : Number(e.target.value))} />
+              <input type="number" className="field-input" placeholder="e.g. 6500000" value={vehiclePrice} onChange={(e) => setVehiclePrice(e.target.value === "" ? "" : Number(e.target.value))} />
             </div>
             <div>
               <label className="field-label">Down payment</label>
-              <input type="number" className="field-input" value={downPayment} onChange={(e) => setDownPayment(e.target.value === "" ? "" : Number(e.target.value))} />
+              <input type="number" className="field-input" placeholder="e.g. 1500000" value={downPayment} onChange={(e) => setDownPayment(e.target.value === "" ? "" : Number(e.target.value))} />
             </div>
             <div>
               <label className="field-label">Interest / profit rate (annual %)</label>
-              <input type="number" className="field-input" value={interestRate} onChange={(e) => setInterestRate(e.target.value === "" ? "" : Number(e.target.value))} />
+              <input type="number" className="field-input" placeholder="e.g. 15" value={interestRate} onChange={(e) => setInterestRate(e.target.value === "" ? "" : Number(e.target.value))} />
             </div>
             <div>
               <label className="field-label">Loan duration (years)</label>
-              <input type="number" className="field-input" value={loanDurationYears} onChange={(e) => setLoanDurationYears(e.target.value === "" ? "" : Number(e.target.value))} />
+              <input type="number" className="field-input" placeholder="e.g. 5" value={loanDurationYears} onChange={(e) => setLoanDurationYears(e.target.value === "" ? "" : Number(e.target.value))} />
             </div>
           </div>
         )}

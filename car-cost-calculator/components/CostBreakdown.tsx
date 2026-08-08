@@ -7,13 +7,13 @@ function pkr(n: number, currency: string) {
   return `${currency} ${Math.round(n).toLocaleString()}`;
 }
 
-const ROWS = [
-  { key: "fuel", label: "Fuel" },
+const ROWS: { key: "fuel" | "maintenance" | "insurance" | "government" | "financing"; label: string | null }[] = [
+  { key: "fuel", label: null }, // label resolved dynamically from data.fuel.label (Fuel vs Electricity)
   { key: "maintenance", label: "Maintenance" },
   { key: "insurance", label: "Insurance" },
   { key: "government", label: "Registration / Government" },
   { key: "financing", label: "Financing" },
-] as const;
+];
 
 export default function CostBreakdown({
   data,
@@ -58,10 +58,11 @@ export default function CostBreakdown({
         <tbody>
           {ROWS.map(({ key, label }) => {
             const b = blocks[key];
+            const displayLabel = label ?? data.fuel.label;
             return (
               <Fragment key={key}>
                 <tr className="border-b border-black/5">
-                  <td className="py-3 px-5 font-medium">{label}</td>
+                  <td className="py-3 px-5 font-medium">{displayLabel}</td>
                   <td className="py-3 px-5 font-mono">{pkr(b.monthly, currency)}</td>
                   <td className="py-3 px-5 font-mono">{pkr(b.annual, currency)}</td>
                   <td className="py-3 px-5 text-right">
@@ -78,6 +79,13 @@ export default function CostBreakdown({
                 {openSources === key && b.sources && (
                   <tr className="bg-paper/60">
                     <td colSpan={4} className="px-5 py-4">
+                      {key === "fuel" && (
+                        <p className="text-xs text-ink/60 mb-2">
+                          {data.fuel.label} price used: {currency} {data.fuel.pricePerUnit.toLocaleString()} per{" "}
+                          {data.fuel.unit.includes("kWh") ? "kWh" : "liter"} · Economy used:{" "}
+                          {data.fuel.economy} {data.fuel.unit}
+                        </p>
+                      )}
                       {b.range && (
                         <p className="text-xs text-ink/60 mb-2">
                           Estimated range: {currency} {b.range[0].toLocaleString()}–{b.range[1].toLocaleString()} / month

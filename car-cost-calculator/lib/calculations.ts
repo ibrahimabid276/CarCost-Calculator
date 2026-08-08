@@ -16,7 +16,8 @@ import {
 // These keep the app functional end-to-end, but every fallback value is clearly labeled
 // as an estimate (not a search result) in the response's source list.
 const FALLBACKS = {
-  fuelPricePkr: 275,
+  fuelPricePkr: 275, // per liter (Petrol/Diesel/Hybrid/CNG use this baseline)
+  electricityPricePkr: 55, // per kWh
   fuelEconomyByType: {
     Petrol: 13,
     Diesel: 16,
@@ -81,9 +82,15 @@ export async function calculateCarCost(
     .join(" ");
   const locationLabel = [input.city, input.country].filter(Boolean).join(", ");
 
+  const isElectric = input.fuelType === "Electric";
+
   const queries = {
-    fuelPrice: `current ${input.fuelType} price ${input.country} per liter`,
-    fuelEconomy: `${vehicleLabel} average fuel consumption km/l real world`,
+    fuelPrice: isElectric
+      ? `current residential electricity price per unit kWh ${input.country}`
+      : `current ${input.fuelType} price ${input.country} per liter`,
+    fuelEconomy: isElectric
+      ? `${vehicleLabel} electric range km per kWh battery efficiency`
+      : `${vehicleLabel} average fuel consumption km/l real world`,
     maintenance: `${vehicleLabel} annual maintenance cost ${locationLabel}`,
     insurance: `${vehicleLabel} car insurance annual premium ${input.country}`,
     government: `${input.city} ${input.country} vehicle registration token tax ${vehicleLabel}`,
@@ -102,7 +109,6 @@ export async function calculateCarCost(
   const get = (key: keyof typeof queries) => results[queries[key]] ?? null;
 
   // ---------- Fuel ----------
-  const isElectric = input.fuelType === "Electric";
   let economy = input.manualFuelEconomy || 0;
   const economySources: SourceRef[] = [];
   if (!economy) {
@@ -131,20 +137,25 @@ export async function calculateCarCost(
 
   let pricePerUnit = input.manualFuelPrice || 0;
   const priceSources: SourceRef[] = [];
+  const priceLabel = isElectric ? "Electricity price" : "Fuel price";
   if (!pricePerUnit) {
     const resp = get("fuelPrice");
     const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), 50, 600);
+    // Electricity is priced per kWh (much smaller numbers than petrol/L),
+    // so it needs its own plausible range to avoid picking up noise.
+    const nums = isElectric
+      ? plausibleNumbers(extractAllNumbers(text), 10, 150)
+      : plausibleNumbers(extractAllNumbers(text), 50, 600);
     const med = median(nums);
     if (med) {
       pricePerUnit = med;
-      priceSources.push(...buildSources("Fuel price", resp, false));
+      priceSources.push(...buildSources(priceLabel, resp, false));
     } else {
-      pricePerUnit = FALLBACKS.fuelPricePkr;
-      priceSources.push(...buildSources("Fuel price", resp, true));
+      pricePerUnit = isElectric ? FALLBACKS.electricityPricePkr : FALLBACKS.fuelPricePkr;
+      priceSources.push(...buildSources(priceLabel, resp, true));
     }
   } else {
-    priceSources.push({ label: "User-provided fuel price" });
+    priceSources.push({ label: `User-provided ${priceLabel.toLowerCase()}` });
   }
 
   const monthlyKm = input.dailyKm * input.drivingDaysPerMonth;
@@ -158,6 +169,7 @@ export async function calculateCarCost(
     pricePerUnit: Math.round(pricePerUnit),
     economy: Math.round(economy * 10) / 10,
     unit: isElectric ? "km/kWh" : "km/L",
+    label: isElectric ? "Electricity" : "Fuel",
     sources: [...priceSources, ...economySources],
   };
 

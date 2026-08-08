@@ -14,14 +14,13 @@ function emptyCar(): CompareCarInput {
 
 export default function ComparePage() {
   const [cars, setCars] = useState<CompareCarInput[]>([
-    { make: "Toyota", model: "Corolla", variant: "1.6", fuelType: "Petrol" },
-    { make: "Honda", model: "Civic", variant: "1.5", fuelType: "Petrol" },
-    { make: "Honda", model: "City", variant: "1.2", fuelType: "Petrol" },
+    emptyCar(),
+    emptyCar(),
   ]);
   const [country, setCountry] = useState("Pakistan");
   const [city, setCity] = useState("Lahore");
-  const [dailyKm, setDailyKm] = useState(30);
-  const [drivingDaysPerMonth, setDrivingDaysPerMonth] = useState(26);
+  const [dailyKm, setDailyKm] = useState<number | "">("");
+  const [drivingDaysPerMonth, setDrivingDaysPerMonth] = useState<number | "">("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,13 +46,23 @@ export default function ComparePage() {
       setError("Please fill in a make and model for every car.");
       return;
     }
+    if (dailyKm === "" || drivingDaysPerMonth === "") {
+      setError("Please enter daily kilometers and driving days per month.");
+      return;
+    }
     setLoading(true);
     setResults(null);
     try {
       const res = await fetch("/api/compare-cars", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cars, country, city, dailyKm, drivingDaysPerMonth }),
+        body: JSON.stringify({
+          cars,
+          country,
+          city,
+          dailyKm: Number(dailyKm),
+          drivingDaysPerMonth: Number(drivingDaysPerMonth),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Comparison failed.");
@@ -88,11 +97,11 @@ export default function ComparePage() {
             </div>
             <div>
               <label className="field-label">Daily km</label>
-              <input type="number" className="field-input" value={dailyKm} onChange={(e) => setDailyKm(Number(e.target.value))} />
+              <input type="number" className="field-input" placeholder="e.g. 30" value={dailyKm} onChange={(e) => setDailyKm(e.target.value === "" ? "" : Number(e.target.value))} />
             </div>
             <div>
               <label className="field-label">Driving days/mo</label>
-              <input type="number" className="field-input" value={drivingDaysPerMonth} onChange={(e) => setDrivingDaysPerMonth(Number(e.target.value))} />
+              <input type="number" className="field-input" placeholder="e.g. 26" value={drivingDaysPerMonth} onChange={(e) => setDrivingDaysPerMonth(e.target.value === "" ? "" : Number(e.target.value))} />
             </div>
           </div>
         </section>
