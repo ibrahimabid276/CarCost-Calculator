@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CarCostRequest, FuelType } from "@/types/car";
+import { COUNTRIES } from "@/lib/countries";
 
 const CITIES = [
   "Lahore",
@@ -145,7 +146,11 @@ export default function CarForm({ onSubmit, submitting }: Props) {
         <div className="grid sm:grid-cols-2 gap-5">
           <div>
             <label className="field-label">Country</label>
-            <input className="field-input" value={country} onChange={(e) => setCountry(e.target.value)} />
+            <select className="field-input" value={country} onChange={(e) => setCountry(e.target.value)}>
+              {COUNTRIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="field-label">City</label>

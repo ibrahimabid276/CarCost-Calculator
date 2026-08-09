@@ -5,6 +5,8 @@ import Link from "next/link";
 import ComparisonTable from "@/components/ComparisonTable";
 import SearchProgress from "@/components/SearchProgress";
 import { CompareCarInput, CompareResult, FuelType } from "@/types/car";
+import { COUNTRIES } from "@/lib/countries";
+import { currencyForCountry } from "@/lib/currency";
 
 const FUEL_TYPES: FuelType[] = ["Petrol", "Diesel", "Hybrid", "Electric", "CNG"];
 
@@ -89,7 +91,11 @@ export default function ComparePage() {
           <div className="grid sm:grid-cols-4 gap-4">
             <div>
               <label className="field-label">Country</label>
-              <input className="field-input" value={country} onChange={(e) => setCountry(e.target.value)} />
+              <select className="field-input" value={country} onChange={(e) => setCountry(e.target.value)}>
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="field-label">City</label>
@@ -159,7 +165,7 @@ export default function ComparePage() {
         {results && !loading && (
           <>
             <h2 className="text-xl font-display font-semibold mb-4">Comparison results</h2>
-            <ComparisonTable results={results} currency="PKR" />
+            <ComparisonTable results={results} currency={currencyForCountry(country)} />
           </>
         )}
       </div>

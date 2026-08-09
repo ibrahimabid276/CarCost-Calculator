@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CarForm from "@/components/CarForm";
 import SearchProgress from "@/components/SearchProgress";
 import { CarCostRequest } from "@/types/car";
+import { currencyForCountry } from "@/lib/currency";
 import Link from "next/link";
 
 export default function CalculatorPage() {
@@ -66,14 +67,4 @@ export default function CalculatorPage() {
       </div>
     </main>
   );
-}
-
-function currencyForCountry(country: string): string {
-  const c = country.trim().toLowerCase();
-  if (c.includes("pakistan")) return "PKR";
-  if (c.includes("india")) return "₹";
-  if (c.includes("united states") || c === "usa" || c === "us") return "$";
-  if (c.includes("united kingdom") || c === "uk") return "£";
-  if (c.includes("uae") || c.includes("emirates")) return "AED";
-  return "PKR";
 }

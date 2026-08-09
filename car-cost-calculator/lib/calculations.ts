@@ -13,26 +13,99 @@ import {
   GovernmentBlock,
   SourceRef,
 } from "@/types/car";
+import { currencyForCountry } from "@/lib/currency";
 
 // ---- Fallback baselines, used ONLY when live search is fully unavailable ----
 // (network/API failure). When search runs fine but simply returns nothing
 // usable for a given value, we do NOT silently substitute one of these —
 // insurance and government costs are marked "unavailable" instead. See the
 // status field on each EstimateBlock.
-const FALLBACKS = {
-  fuelPricePkr: 275, // per liter (Petrol/Diesel/Hybrid/CNG use this baseline)
-  electricityPricePkr: 55, // per kWh
-  fuelEconomyByType: {
-    Petrol: 13,
-    Diesel: 16,
-    Hybrid: 22,
-    CNG: 11,
-    Electric: 6, // km/kWh
-  } as Record<string, number>,
-  maintenanceMonthlyPkr: 7500,
-  insuranceAnnualPkr: 55000,
-  governmentAnnualPkr: 20000,
-  governmentOneTimePkr: 35000,
+//
+// Values are currency-specific: PKR/INR/USD each have wildly different
+// magnitudes (e.g. fuel is ~275 PKR/L, ~100 INR/L, ~1 USD/L), so one set of
+// numbers can't sensibly serve all three. The plausible-number ranges used
+// to validate search results are currency-specific for the same reason —
+// without this, a real US insurance quote like "$1,200/year" would fall
+// outside a PKR-tuned range (10,000–500,000) and get rejected every time.
+type CurrencyProfile = {
+  fuelPricePerUnit: number;
+  electricityPricePerUnit: number;
+  maintenanceMonthly: number;
+  insuranceAnnual: number;
+  governmentAnnual: number;
+  governmentOneTime: number;
+  ranges: {
+    fuelPrice: [number, number];
+    electricityPrice: [number, number];
+    maintenance: [number, number];
+    insurance: [number, number];
+    governmentOneTime: [number, number];
+    governmentAnnual: [number, number];
+  };
+};
+
+const CURRENCY_PROFILES: Record<string, CurrencyProfile> = {
+  PKR: {
+    fuelPricePerUnit: 275,
+    electricityPricePerUnit: 55,
+    maintenanceMonthly: 7500,
+    insuranceAnnual: 55000,
+    governmentAnnual: 20000,
+    governmentOneTime: 35000,
+    ranges: {
+      fuelPrice: [50, 600],
+      electricityPrice: [10, 150],
+      maintenance: [2000, 400000],
+      insurance: [10000, 500000],
+      governmentOneTime: [2000, 500000],
+      governmentAnnual: [500, 150000],
+    },
+  },
+  "₹": {
+    fuelPricePerUnit: 100,
+    electricityPricePerUnit: 8,
+    maintenanceMonthly: 3000,
+    insuranceAnnual: 15000,
+    governmentAnnual: 5000,
+    governmentOneTime: 10000,
+    ranges: {
+      fuelPrice: [40, 250],
+      electricityPrice: [3, 30],
+      maintenance: [800, 150000],
+      insurance: [3000, 200000],
+      governmentOneTime: [1000, 200000],
+      governmentAnnual: [200, 60000],
+    },
+  },
+  $: {
+    fuelPricePerUnit: 1.05, // per liter
+    electricityPricePerUnit: 0.16,
+    maintenanceMonthly: 100,
+    insuranceAnnual: 1300,
+    governmentAnnual: 150,
+    governmentOneTime: 300,
+    ranges: {
+      fuelPrice: [0.3, 5],
+      electricityPrice: [0.05, 1],
+      maintenance: [15, 3000],
+      insurance: [200, 6000],
+      governmentOneTime: [20, 4000],
+      governmentAnnual: [10, 2000],
+    },
+  },
+};
+
+function profileFor(country: string): CurrencyProfile {
+  return CURRENCY_PROFILES[currencyForCountry(country)] || CURRENCY_PROFILES["$"];
+}
+
+// Fuel economy (km/L or km/kWh) doesn't depend on currency/country — kept separate.
+const FUEL_ECONOMY_BY_TYPE: Record<string, number> = {
+  Petrol: 13,
+  Diesel: 16,
+  Hybrid: 22,
+  CNG: 11,
+  Electric: 6, // km/kWh
 };
 
 // Assumed energy lost in an EV's charging cycle (AC/DC conversion, battery
@@ -101,6 +174,7 @@ export async function calculateCarCost(
   const locationLabel = [input.city, input.country].filter(Boolean).join(", ");
 
   const isElectric = input.fuelType === "Electric";
+  const profile = profileFor(input.country);
 
   const queries = {
     fuelPrice: isElectric
@@ -149,7 +223,7 @@ export async function calculateCarCost(
       economyStatus = "search";
       economySources.push(...buildSources("Fuel economy", resp, "search"));
     } else {
-      economy = FALLBACKS.fuelEconomyByType[input.fuelType] || 13;
+      economy = FUEL_ECONOMY_BY_TYPE[input.fuelType] || 13;
       economyStatus = searchDegraded ? "baseline" : "unavailable";
       economySources.push(...buildSources("Fuel economy", resp, "baseline"));
     }
@@ -168,15 +242,15 @@ export async function calculateCarCost(
     // Electricity is priced per kWh (much smaller numbers than petrol/L),
     // so it needs its own plausible range to avoid picking up noise.
     const nums = isElectric
-      ? plausibleNumbers(extractAllNumbers(text), 10, 150)
-      : plausibleNumbers(extractAllNumbers(text), 50, 600);
+      ? plausibleNumbers(extractAllNumbers(text), ...profile.ranges.electricityPrice)
+      : plausibleNumbers(extractAllNumbers(text), ...profile.ranges.fuelPrice);
     const med = median(nums);
     if (med) {
       pricePerUnit = med;
       priceStatus = "search";
       priceSources.push(...buildSources(priceLabel, resp, "search"));
     } else {
-      pricePerUnit = isElectric ? FALLBACKS.electricityPricePkr : FALLBACKS.fuelPricePkr;
+      pricePerUnit = isElectric ? profile.electricityPricePerUnit : profile.fuelPricePerUnit;
       priceStatus = searchDegraded ? "baseline" : "unavailable";
       priceSources.push(...buildSources(priceLabel, resp, "baseline"));
     }
@@ -229,25 +303,25 @@ export async function calculateCarCost(
   } else {
     const resp = get("maintenance");
     const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), 2000, 400000);
+    const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.maintenance);
     if (nums.length >= 2) {
       const sorted = [...nums].sort((a, b) => a - b);
       const med = median(nums) || sorted[0];
-      // Treat median as an annual figure if it's large, else assume monthly.
-      const annualGuess = med > 30000 ? med : med * 12;
+      // Treat median as an annual figure if it's large relative to the
+      // monthly baseline for this currency, else assume it's already monthly.
+      const monthlyBaseline = profile.maintenanceMonthly;
+      const annualGuess = med > monthlyBaseline * 4 ? med : med * 12;
       maintenanceMonthly = Math.round(annualGuess / 12);
+      const lowIsAnnual = sorted[0] > monthlyBaseline * 4;
+      const highIsAnnual = sorted[sorted.length - 1] > monthlyBaseline * 4;
       maintenanceRange = {
-        low: Math.round((sorted[0] > 30000 ? sorted[0] : sorted[0] * 12) / 12),
-        high: Math.round(
-          (sorted[sorted.length - 1] > 30000
-            ? sorted[sorted.length - 1]
-            : sorted[sorted.length - 1] * 12) / 12
-        ),
+        low: Math.round((lowIsAnnual ? sorted[0] : sorted[0] * 12) / 12),
+        high: Math.round((highIsAnnual ? sorted[sorted.length - 1] : sorted[sorted.length - 1] * 12) / 12),
       };
       maintenanceStatus = "search";
       maintenanceSources = buildSources("Maintenance", resp, "search");
     } else {
-      maintenanceMonthly = FALLBACKS.maintenanceMonthlyPkr;
+      maintenanceMonthly = profile.maintenanceMonthly;
       maintenanceStatus = "baseline";
       maintenanceSources = buildSources("Maintenance", resp, "baseline");
     }
@@ -288,14 +362,14 @@ export async function calculateCarCost(
   } else {
     const resp = get("insurance");
     const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), 10000, 500000);
+    const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.insurance);
     const med = median(nums);
     if (med) {
       insuranceAnnual = Math.round(med);
       insuranceStatus = "search";
       insuranceSources = buildSources("Insurance", resp, "search");
     } else if (searchDegraded) {
-      insuranceAnnual = FALLBACKS.insuranceAnnualPkr;
+      insuranceAnnual = profile.insuranceAnnual;
       insuranceStatus = "baseline";
       insuranceSources = buildSources("Insurance", resp, "baseline");
     } else {
@@ -329,14 +403,14 @@ export async function calculateCarCost(
   {
     const resp = get("governmentOneTime");
     const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), 2000, 500000);
+    const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.governmentOneTime);
     const med = median(nums);
     if (med) {
       oneTimeRegistration = Math.round(med);
       oneTimeStatus = "search";
       oneTimeSources = buildSources("One-time registration", resp, "search");
     } else if (searchDegraded) {
-      oneTimeRegistration = FALLBACKS.governmentOneTimePkr;
+      oneTimeRegistration = profile.governmentOneTime;
       oneTimeStatus = "baseline";
       oneTimeSources = buildSources("One-time registration", resp, "baseline");
     } else {
@@ -355,7 +429,7 @@ export async function calculateCarCost(
   {
     const resp = get("governmentAnnual");
     const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), 500, 150000);
+    const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.governmentAnnual);
     if (nums.length) {
       const sorted = [...nums].sort((a, b) => a - b);
       governmentAnnual = Math.round(median(nums) || sorted[0]);
@@ -367,7 +441,7 @@ export async function calculateCarCost(
       governmentStatus = "search";
       governmentSources = buildSources("Annual road/token tax", resp, "search");
     } else if (searchDegraded) {
-      governmentAnnual = FALLBACKS.governmentAnnualPkr;
+      governmentAnnual = profile.governmentAnnual;
       governmentStatus = "baseline";
       governmentSources = buildSources("Annual road/token tax", resp, "baseline");
     } else {
@@ -469,5 +543,8 @@ function gl(country: string): string {
   if (c.includes("united states") || c === "usa" || c === "us") return "us";
   if (c.includes("united kingdom") || c === "uk") return "gb";
   if (c.includes("uae") || c.includes("emirates")) return "ae";
-  return "pk";
+  // Every other country now displays in USD (see lib/currency.ts), so default
+  // the search region to the US rather than Pakistan — this used to silently
+  // bias every unrecognized country's search results toward Pakistan.
+  return "us";
 }
