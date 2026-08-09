@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const whatWeCalculate = [
   { label: "Fuel", detail: "Monthly & annual, from real economy figures" },
@@ -24,25 +25,37 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-black/5">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,rgba(47,93,80,0.08),transparent_60%)]" />
-        <div className="container-page pt-20 pb-24 sm:pt-28 sm:pb-32">
-          <p className="text-sm tracking-wide uppercase text-moss font-medium mb-5 animate-fadeUp">
-            Real ownership cost, not a fuel calculator
-          </p>
-          <h1 className="text-4xl sm:text-6xl font-display font-semibold leading-[1.05] max-w-3xl animate-fadeUp [animation-delay:80ms]">
-            What does your car <span className="italic text-rust">really</span> cost you?
-          </h1>
-          <p className="mt-6 text-lg text-ink/70 max-w-xl animate-fadeUp [animation-delay:160ms]">
-            Calculate your monthly, yearly and long-term ownership costs — fuel,
-            maintenance, insurance, registration and financing — using your
-            driving habits and current market data.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4 animate-fadeUp [animation-delay:240ms]">
-            <Link href="/calculator" className="btn-primary">
-              Calculate My Car Cost
-            </Link>
-            <Link href="/compare" className="btn-secondary">
-              Compare Cars
-            </Link>
+        <div className="container-page pt-20 pb-24 sm:pt-28 sm:pb-32 grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-sm tracking-wide uppercase text-moss font-medium mb-5 animate-fadeUp">
+              Real ownership cost, not a fuel calculator
+            </p>
+            <h1 className="text-4xl sm:text-6xl font-display font-semibold leading-[1.05] max-w-3xl animate-fadeUp [animation-delay:80ms]">
+              What does your car <span className="italic text-rust">really</span> cost you?
+            </h1>
+            <p className="mt-6 text-lg text-ink/70 max-w-xl animate-fadeUp [animation-delay:160ms]">
+              Calculate your monthly, yearly and long-term ownership costs — fuel,
+              maintenance, insurance, registration and financing — using your
+              driving habits and current market data.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4 animate-fadeUp [animation-delay:240ms]">
+              <Link href="/calculator" className="btn-primary">
+                Calculate My Car Cost
+              </Link>
+              <Link href="/compare" className="btn-secondary">
+                Compare Cars
+              </Link>
+            </div>
+          </div>
+          <div className="animate-fadeUp [animation-delay:200ms]">
+            <Image
+              src="/logo-full.png"
+              alt="CarCost Calculator — Know the real cost. Drive smarter."
+              width={1471}
+              height={979}
+              className="w-full h-auto max-w-lg mx-auto lg:max-w-none"
+              priority
+            />
           </div>
         </div>
       </section>
