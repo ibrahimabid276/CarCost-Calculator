@@ -194,7 +194,9 @@ export default function CarForm({ onSubmit, submitting }: Props) {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="field-label">Average fuel economy</label>
+            <label className="field-label">
+              {fuelType === "Electric" ? "Average electric efficiency (km/kWh)" : "Average fuel economy (km/L)"}
+            </label>
             <div className="flex gap-3 mb-2">
               <button
                 type="button"
@@ -219,14 +221,16 @@ export default function CarForm({ onSubmit, submitting }: Props) {
               <input
                 type="number"
                 className="field-input"
-                placeholder="e.g. 14 km/L"
+                placeholder={fuelType === "Electric" ? "e.g. 6 km/kWh" : "e.g. 14 km/L"}
                 value={manualFuelEconomy}
                 onChange={(e) => setManualFuelEconomy(e.target.value === "" ? "" : Number(e.target.value))}
               />
             )}
           </div>
           <div className="sm:col-span-2">
-            <label className="field-label">Manual fuel price override (optional)</label>
+            <label className="field-label">
+              {fuelType === "Electric" ? "Manual electricity price override (optional)" : "Manual fuel price override (optional)"}
+            </label>
             <input
               type="number"
               className="field-input"

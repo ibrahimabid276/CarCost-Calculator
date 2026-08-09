@@ -37,9 +37,20 @@ export interface SourceRef {
   link?: string;
 }
 
+/**
+ * Where a value came from, so the UI can be honest about confidence:
+ *  - "user"        the person typed this in themselves
+ *  - "search"      derived from live SerperDev search results
+ *  - "baseline"    live search failed/unavailable — a labeled fallback estimate
+ *  - "unavailable" we couldn't determine a reliable value and refused to guess
+ *  - "not-applicable" the user opted out (e.g. "I don't have insurance")
+ */
+export type EstimateStatus = "user" | "search" | "baseline" | "unavailable" | "not-applicable";
+
 export interface EstimateBlock {
   monthly: number;
   annual: number;
+  status: EstimateStatus;
   sources: SourceRef[];
   note?: string;
   isEstimateRange?: boolean;
@@ -52,6 +63,15 @@ export interface FuelEstimate extends EstimateBlock {
   economy: number;
   unit: string; // "km/L" or "km/kWh"
   label: string; // "Fuel" or "Electricity" — use this instead of hardcoding "Fuel" in the UI
+  chargingLossPercent?: number; // Electric only — assumed charging loss applied on top of consumption
+}
+
+export interface GovernmentBlock extends EstimateBlock {
+  // `monthly`/`annual` above represent ONLY the recurring annual road/token
+  // tax (never a one-time fee smeared across months).
+  oneTimeRegistration: number;
+  oneTimeStatus: EstimateStatus;
+  oneTimeSources: SourceRef[];
 }
 
 export interface CarCostResponse {
@@ -66,7 +86,7 @@ export interface CarCostResponse {
   fuel: FuelEstimate;
   maintenance: EstimateBlock;
   insurance: EstimateBlock;
-  government: EstimateBlock;
+  government: GovernmentBlock;
   financing: {
     monthly: number;
     annual: number;
