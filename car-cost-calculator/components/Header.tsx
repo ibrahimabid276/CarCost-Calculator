@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -25,7 +26,15 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-black/5 bg-paper/90 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="font-display text-lg font-semibold tracking-tight">
+        <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-semibold tracking-tight">
+          <Image
+            src="/logo.png"
+            alt="CarCost logo"
+            width={36}
+            height={36}
+            className="h-9 w-9 object-contain"
+            priority
+          />
           CarCost
         </Link>
 
