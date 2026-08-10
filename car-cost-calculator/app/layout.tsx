@@ -14,6 +14,11 @@ const body = Inter({ subsets: ["latin"], variable: "--font-body" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
+      (process.env.NODE_ENV === "production" ? "https://car-cost-calculator.site" : "http://localhost:3000")
+  ),
   title: "CarCost — Know what your car really costs",
   description:
     "Calculate the true monthly and yearly cost of owning your car — fuel, maintenance, insurance, registration and financing — using current market data.",
