@@ -23,6 +23,7 @@ export default function ComparePage() {
   const [city, setCity] = useState("Lahore");
   const [dailyKm, setDailyKm] = useState<number | "">("");
   const [drivingDaysPerMonth, setDrivingDaysPerMonth] = useState<number | "">("");
+  const [hasInsurance, setHasInsurance] = useState(false); // Insurance is OFF by default in comparisons
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +65,7 @@ export default function ComparePage() {
           city,
           dailyKm: Number(dailyKm),
           drivingDaysPerMonth: Number(drivingDaysPerMonth),
+          hasInsurance,
         }),
       });
       const json = await res.json();
@@ -108,6 +110,25 @@ export default function ComparePage() {
             <div>
               <label className="field-label">Driving days/mo</label>
               <input type="number" className="field-input" placeholder="e.g. 26" value={drivingDaysPerMonth} onChange={(e) => setDrivingDaysPerMonth(e.target.value === "" ? "" : Number(e.target.value))} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <label className="field-label">Insurance</label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setHasInsurance(true)}
+                className={`px-4 py-2 rounded-full text-sm border ${hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+              >
+                Include insurance
+              </button>
+              <button
+                type="button"
+                onClick={() => setHasInsurance(false)}
+                className={`px-4 py-2 rounded-full text-sm border ${!hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+              >
+                Exclude insurance
+              </button>
             </div>
           </div>
         </section>

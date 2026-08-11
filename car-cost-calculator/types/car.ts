@@ -142,6 +142,9 @@ export interface CompareRequest {
   city: string;
   dailyKm: number;
   drivingDaysPerMonth: number;
+  // Whether to include insurance in the comparison's calculations/totals.
+  // Defaults to false (OFF) at the point of use — see app/compare/page.tsx.
+  hasInsurance?: boolean;
 }
 
 export interface CompareResult {

@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
     const city = body.city || "Lahore";
     const dailyKm = body.dailyKm || 30;
     const drivingDaysPerMonth = body.drivingDaysPerMonth || 26;
+    // Insurance is OFF by default for comparisons unless the caller
+    // explicitly opts in — matches the Compare Cars UI default.
+    const hasInsurance = body.hasInsurance === true;
 
     const results = await Promise.all(
       body.cars.map(async (car) => {
@@ -52,7 +55,7 @@ export async function POST(req: NextRequest) {
           dailyKm,
           drivingDaysPerMonth,
           fuelEconomyMode: "auto",
-          hasInsurance: true,
+          hasInsurance,
           financing: { isFinancing: false },
         };
         const result = await calculateCarCost(req);
