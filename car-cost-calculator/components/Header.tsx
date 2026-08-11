@@ -9,7 +9,6 @@ import { useAuth } from "@/lib/auth-context";
 const NAV_LINKS = [
   { href: "/calculator", label: "Calculator" },
   { href: "/compare", label: "Compare" },
-  { href: "/leaderboard", label: "Leaderboard" },
 ];
 
 export default function Header() {
