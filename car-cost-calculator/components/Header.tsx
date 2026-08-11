@@ -67,16 +67,7 @@ export default function Header() {
                 Sign Out
               </button>
             </>
-          ) : (
-            <>
-              <Link href="/signin" className="text-sm font-medium text-ink/70 hover:text-ink">
-                Sign In
-              </Link>
-              <Link href="/signup" className="btn-primary !px-4 !py-2 text-sm">
-                Sign Up
-              </Link>
-            </>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile menu toggle */}
@@ -140,24 +131,7 @@ export default function Header() {
                     Sign Out
                   </button>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <Link
-                    href="/signin"
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink/80 hover:bg-ink/5"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setMenuOpen(false)}
-                    className="btn-primary mt-1 w-full justify-center"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
