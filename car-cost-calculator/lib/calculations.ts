@@ -14,6 +14,12 @@ import {
   SourceRef,
 } from "@/types/car";
 import { currencyForCountry } from "@/lib/currency";
+import {
+  computePunjabGovCharges,
+  isPunjabCity,
+  parseEngineCC,
+  PUNJAB_GOV_SOURCE,
+} from "@/lib/govCharges";
 
 // ---- Fallback baselines, used ONLY when live search is fully unavailable ----
 // (network/API failure). When search runs fine but simply returns nothing
@@ -98,6 +104,20 @@ const CURRENCY_PROFILES: Record<string, CurrencyProfile> = {
 function profileFor(country: string): CurrencyProfile {
   return CURRENCY_PROFILES[currencyForCountry(country)] || CURRENCY_PROFILES["$"];
 }
+
+// Rule-of-thumb PKR/km maintenance rate for private cars (routine
+// servicing, oil/filter changes, tyres, brakes, battery amortized per km
+// driven). This is a deliberately labeled estimate — no single official
+// source publishes a per-km maintenance figure — used as the PRIMARY
+// maintenance model so the result scales with the user's actual mileage
+// instead of guessing whether a scraped search number was monthly or
+// annual (that guess previously caused up to a 12x misclassification,
+// e.g. reading an annual figure as if it were monthly).
+const MAINTENANCE_RATE_PER_KM: Record<string, number> = {
+  PKR: 4.5,
+  "₹": 1.8,
+  $: 0.05,
+};
 
 // Pakistani vehicle registration fees and annual token tax are set
 // provincially (Excise & Taxation departments), not federally, so the same
@@ -198,12 +218,25 @@ export async function calculateCarCost(
   const isElectric = input.fuelType === "Electric";
   const profile = profileFor(input.country);
 
+  // Single source of truth for distance: every calculation that needs a
+  // monthly or annual km figure (fuel, maintenance, cost-per-km) reads
+  // from these two values — never a second, independently-derived figure.
+  const monthlyKm = input.dailyKm * input.drivingDaysPerMonth;
+  const annualKm = monthlyKm * 12;
+
+  const isPakistan = input.country.trim().toLowerCase().includes("pakistan");
+  const engineCC = parseEngineCC(input.engineSize);
+  const usePunjabSchedule = isPakistan && isPunjabCity(input.city) && engineCC !== null;
+
   // Registration fee and token tax are usually a function of engine capacity
   // and/or declared vehicle value, not a flat number — feed in whatever the
   // user already supplied (engineSize is always collected; vehiclePrice
   // only exists when they filled in the Financing section) rather than
   // inventing one. Province narrows the search to the right provincial
-  // Excise & Taxation schedule instead of a generic national figure.
+  // Excise & Taxation schedule instead of a generic national figure. This
+  // search path is only actually used as the government figure when the
+  // official Punjab calculator above doesn't apply (city outside Punjab,
+  // country isn't Pakistan, or engine size couldn't be parsed).
   const province = pakistanProvinceForCity(input.city);
   const govLocationLabel = province ? `${input.city}, ${province}, Pakistan` : locationLabel;
   const vehicleValueLabel = input.financing?.vehiclePrice
@@ -305,7 +338,6 @@ export async function calculateCarCost(
     }
   }
 
-  const monthlyKm = input.dailyKm * input.drivingDaysPerMonth;
   // EVs lose some energy in the charging cycle itself — account for that on
   // top of raw consumption so the electricity cost isn't understated.
   const chargingLossFactor = isElectric ? 1 + EV_CHARGING_LOSS_PERCENT / 100 : 1;
@@ -318,7 +350,9 @@ export async function calculateCarCost(
   // confidence.
   const statusRank: Record<EstimateStatus, number> = {
     user: 0,
+    official: 0,
     search: 1,
+    reference: 2,
     baseline: 2,
     unavailable: 3,
     "not-applicable": 0,
@@ -344,6 +378,14 @@ export async function calculateCarCost(
   };
 
   // ---------- Maintenance ----------
+  // Primary model is mileage-based (PKR/km rule-of-thumb × monthly km) so
+  // the estimate scales with the user's actual driving instead of trying
+  // to guess whether a single scraped search number was already "monthly"
+  // or "annual" — that guess previously misfired by up to 12x (e.g. an
+  // annual figure of ~17,000 read as if it were a monthly figure). Search
+  // results are now only accepted when they land within a sane band of the
+  // mileage model, and the result is always labeled an estimate, never a
+  // verified/current figure.
   let maintenanceMonthly = input.manualMaintenanceMonthly || 0;
   let maintenanceSources: SourceRef[] = [];
   let maintenanceStatus: EstimateStatus;
@@ -352,29 +394,33 @@ export async function calculateCarCost(
     maintenanceStatus = "user";
     maintenanceSources = [{ label: "User-provided maintenance estimate" }];
   } else {
+    const currency = currencyForCountry(input.country);
+    const perKmRate = MAINTENANCE_RATE_PER_KM[currency] ?? MAINTENANCE_RATE_PER_KM["$"];
+    const modelMonthly = Math.round(perKmRate * monthlyKm) || profile.maintenanceMonthly;
+
     const resp = get("maintenance");
     const text = flattenSnippets(resp);
     const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.maintenance);
-    if (nums.length >= 2) {
-      const sorted = [...nums].sort((a, b) => a - b);
-      const med = median(nums) || sorted[0];
-      // Treat median as an annual figure if it's large relative to the
-      // monthly baseline for this currency, else assume it's already monthly.
-      const monthlyBaseline = profile.maintenanceMonthly;
-      const annualGuess = med > monthlyBaseline * 4 ? med : med * 12;
-      maintenanceMonthly = Math.round(annualGuess / 12);
-      const lowIsAnnual = sorted[0] > monthlyBaseline * 4;
-      const highIsAnnual = sorted[sorted.length - 1] > monthlyBaseline * 4;
-      maintenanceRange = {
-        low: Math.round((lowIsAnnual ? sorted[0] : sorted[0] * 12) / 12),
-        high: Math.round((highIsAnnual ? sorted[sorted.length - 1] : sorted[sorted.length - 1] * 12) / 12),
-      };
+    // Only let a scraped number influence the estimate if it plausibly IS a
+    // monthly figure for this car's mileage (within 0.4x-2.5x of the
+    // model) — this bound is what prevents a stray annual figure from
+    // being silently treated as monthly.
+    const inBandNums = nums.filter((n) => n >= modelMonthly * 0.4 && n <= modelMonthly * 2.5);
+
+    if (inBandNums.length >= 2) {
+      const sorted = [...inBandNums].sort((a, b) => a - b);
+      maintenanceMonthly = Math.round(median(inBandNums) || sorted[0]);
+      maintenanceRange = { low: Math.round(sorted[0]), high: Math.round(sorted[sorted.length - 1]) };
       maintenanceStatus = "search";
       maintenanceSources = buildSources("Maintenance", resp, "search");
     } else {
-      maintenanceMonthly = profile.maintenanceMonthly;
+      maintenanceMonthly = modelMonthly;
       maintenanceStatus = "baseline";
-      maintenanceSources = buildSources("Maintenance", resp, "baseline");
+      maintenanceSources = [
+        {
+          label: `Mileage-based estimate: ${currency} ${perKmRate}/km rule-of-thumb (routine servicing, oil/filter, tyres, brakes, battery) × ${monthlyKm.toLocaleString()} km/month — not an official or vehicle-specific figure`,
+        },
+      ];
     }
   }
 
@@ -445,63 +491,106 @@ export async function calculateCarCost(
   };
 
   // ---------- Government / Registration ----------
-  // Split into a ONE-TIME registration fee and a RECURRING annual road/token
-  // tax. Only the recurring figure is ever converted into a monthly
-  // equivalent and folded into ongoing ownership totals.
+  // Split into a ONE-TIME registration fee (+ the lifetime token for
+  // <=1000cc vehicles) and a RECURRING annual road/token tax. Only the
+  // recurring figure is ever converted into a monthly equivalent and
+  // folded into ongoing ownership totals — a one-time fee is NEVER
+  // multiplied or divided by 12.
+  //
+  // Two data paths, never mixed for the same calculation:
+  //  1. usePunjabSchedule=true  -> figures come from the cited official
+  //     Punjab Excise & Taxation Department rate schedule (lib/govCharges.ts),
+  //     status "official" (calculated from a value the user gave us) or
+  //     "reference" (a documented fallback figure, clearly labeled as such).
+  //  2. usePunjabSchedule=false -> falls back to the existing live-search
+  //     pipeline (other provinces / countries, or an unparseable engine
+  //     size), status "search" / "baseline" / "unavailable" as before.
   let oneTimeRegistration = 0;
   let oneTimeStatus: EstimateStatus;
   let oneTimeSources: SourceRef[];
-  {
-    const resp = get("governmentOneTime");
-    const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.governmentOneTime);
-    const med = median(nums);
-    if (med) {
-      oneTimeRegistration = Math.round(med);
-      oneTimeStatus = "search";
-      oneTimeSources = buildSources("One-time registration", resp, "search");
-    } else if (searchDegraded) {
-      oneTimeRegistration = profile.governmentOneTime;
-      oneTimeStatus = "baseline";
-      oneTimeSources = buildSources("One-time registration", resp, "baseline");
-    } else {
-      oneTimeRegistration = 0;
-      oneTimeStatus = "unavailable";
-      oneTimeSources = buildSources("One-time registration", resp, "unavailable");
-    }
-  }
-
   let governmentAnnual = 0;
   let governmentSources: SourceRef[] = [];
   let governmentStatus: EstimateStatus;
   let govIsRange = false;
   let govLow: number | undefined;
   let govHigh: number | undefined;
-  {
-    const resp = get("governmentAnnual");
-    const text = flattenSnippets(resp);
-    const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.governmentAnnual);
-    if (nums.length) {
-      const sorted = [...nums].sort((a, b) => a - b);
-      governmentAnnual = Math.round(median(nums) || sorted[0]);
-      if (sorted.length > 1) {
-        govIsRange = true;
-        govLow = Math.round(sorted[0]);
-        govHigh = Math.round(sorted[sorted.length - 1]);
+  let governmentNote =
+    "Recurring annual road/token tax only — one-time registration is shown separately and is never spread into your monthly cost.";
+
+  if (usePunjabSchedule && engineCC !== null) {
+    const punjab = computePunjabGovCharges({
+      cc: engineCC,
+      vehicleValue: input.financing?.vehiclePrice,
+      isElectric,
+    });
+
+    oneTimeRegistration = punjab.oneTime.amount;
+    oneTimeStatus = "official";
+    oneTimeSources = [
+      {
+        label: PUNJAB_GOV_SOURCE.label,
+        link: PUNJAB_GOV_SOURCE.link,
+        snippet: `${punjab.oneTime.note} (rates retrieved ${PUNJAB_GOV_SOURCE.retrievedAt} — the department may revise via notification; confirm before paying.)`,
+      },
+    ];
+
+    governmentAnnual = punjab.annual.amount;
+    governmentStatus = punjab.annual.status === "calculated" ? "official" : "reference";
+    governmentSources = [
+      {
+        label: PUNJAB_GOV_SOURCE.label,
+        link: PUNJAB_GOV_SOURCE.link,
+        snippet: `${punjab.annual.note} (rates retrieved ${PUNJAB_GOV_SOURCE.retrievedAt} — the department may revise via notification; confirm before paying.)`,
+      },
+    ];
+    governmentNote = `${punjab.annual.note} One-time charges (registration fee, and the lifetime token for \u22641000cc vehicles) are shown separately below and never spread into your monthly cost.`;
+  } else {
+    {
+      const resp = get("governmentOneTime");
+      const text = flattenSnippets(resp);
+      const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.governmentOneTime);
+      const med = median(nums);
+      if (med) {
+        oneTimeRegistration = Math.round(med);
+        oneTimeStatus = "search";
+        oneTimeSources = buildSources("One-time registration", resp, "search");
+      } else if (searchDegraded) {
+        oneTimeRegistration = profile.governmentOneTime;
+        oneTimeStatus = "baseline";
+        oneTimeSources = buildSources("One-time registration", resp, "baseline");
+      } else {
+        oneTimeRegistration = 0;
+        oneTimeStatus = "unavailable";
+        oneTimeSources = buildSources("One-time registration", resp, "unavailable");
       }
-      governmentStatus = "search";
-      governmentSources = buildSources("Annual road/token tax", resp, "search");
-    } else if (searchDegraded) {
-      governmentAnnual = profile.governmentAnnual;
-      governmentStatus = "baseline";
-      governmentSources = buildSources("Annual road/token tax", resp, "baseline");
-    } else {
-      governmentAnnual = 0;
-      governmentStatus = "unavailable";
-      governmentSources = buildSources("Annual road/token tax", resp, "unavailable");
-      warnings.push(
-        "Annual government/road tax could not be verified for this vehicle and location. It's excluded from your total — check with your local excise & taxation office."
-      );
+    }
+
+    {
+      const resp = get("governmentAnnual");
+      const text = flattenSnippets(resp);
+      const nums = plausibleNumbers(extractAllNumbers(text), ...profile.ranges.governmentAnnual);
+      if (nums.length) {
+        const sorted = [...nums].sort((a, b) => a - b);
+        governmentAnnual = Math.round(median(nums) || sorted[0]);
+        if (sorted.length > 1) {
+          govIsRange = true;
+          govLow = Math.round(sorted[0]);
+          govHigh = Math.round(sorted[sorted.length - 1]);
+        }
+        governmentStatus = "search";
+        governmentSources = buildSources("Annual road/token tax", resp, "search");
+      } else if (searchDegraded) {
+        governmentAnnual = profile.governmentAnnual;
+        governmentStatus = "baseline";
+        governmentSources = buildSources("Annual road/token tax", resp, "baseline");
+      } else {
+        governmentAnnual = 0;
+        governmentStatus = "unavailable";
+        governmentSources = buildSources("Annual road/token tax", resp, "unavailable");
+        warnings.push(
+          "Annual government/road tax could not be verified for this vehicle and location. It's excluded from your total — check with your local excise & taxation office."
+        );
+      }
     }
   }
 
@@ -513,7 +602,7 @@ export async function calculateCarCost(
     isEstimateRange: govIsRange,
     rangeLow: govLow,
     rangeHigh: govHigh,
-    note: "Recurring annual road/token tax only — one-time registration is shown separately and is never spread into your monthly cost.",
+    note: governmentNote,
     oneTimeRegistration,
     oneTimeStatus,
     oneTimeSources,
@@ -556,7 +645,6 @@ export async function calculateCarCost(
   const totalMonthly =
     fuel.monthly + maintenance.monthly + insurance.monthly + government.monthly + financing.monthly;
   const totalAnnual = totalMonthly * 12;
-  const annualKm = input.dailyKm * input.drivingDaysPerMonth * 12;
   const costPerKm = annualKm > 0 ? Math.round((totalAnnual / annualKm) * 100) / 100 : 0;
 
   return {

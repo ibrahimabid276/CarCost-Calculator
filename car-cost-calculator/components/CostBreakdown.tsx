@@ -10,6 +10,8 @@ function pkr(n: number, currency: string) {
 function StatusBadge({ status }: { status: EstimateStatus }) {
   const map: Record<EstimateStatus, { text: string; cls: string }> = {
     user: { text: "You entered this", cls: "bg-moss/10 text-moss" },
+    official: { text: "Official rate schedule", cls: "bg-moss/10 text-moss" },
+    reference: { text: "Published reference figure", cls: "bg-brass/15 text-brass" },
     search: { text: "Verified via search", cls: "bg-moss/10 text-moss" },
     baseline: { text: "Baseline estimate", cls: "bg-brass/15 text-brass" },
     unavailable: { text: "Unavailable", cls: "bg-rust/10 text-rust" },

@@ -46,12 +46,24 @@ export interface SourceRef {
 /**
  * Where a value came from, so the UI can be honest about confidence:
  *  - "user"        the person typed this in themselves
+ *  - "official"     calculated directly from a cited official government rate schedule
+ *  - "reference"    a documented official figure used as a fallback (e.g. an older
+ *                    published flat rate) because a newer value-based rate needs
+ *                    an input (like vehicle price) we don't have — never presented
+ *                    as the current exact figure
  *  - "search"      derived from live SerperDev search results
  *  - "baseline"    live search failed/unavailable — a labeled fallback estimate
  *  - "unavailable" we couldn't determine a reliable value and refused to guess
  *  - "not-applicable" the user opted out (e.g. "I don't have insurance")
  */
-export type EstimateStatus = "user" | "search" | "baseline" | "unavailable" | "not-applicable";
+export type EstimateStatus =
+  | "user"
+  | "official"
+  | "reference"
+  | "search"
+  | "baseline"
+  | "unavailable"
+  | "not-applicable";
 
 export interface EstimateBlock {
   monthly: number;
