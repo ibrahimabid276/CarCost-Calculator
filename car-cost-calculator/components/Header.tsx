@@ -68,6 +68,9 @@ export default function Header() {
               </button>
             </>
           ) : null}
+          <Link href="/calculator" className="btn-primary !px-4 !py-2 text-sm">
+            Calculate My Cost
+          </Link>
         </div>
 
         {/* Mobile menu toggle */}
@@ -111,6 +114,13 @@ export default function Header() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              href="/calculator"
+              onClick={() => setMenuOpen(false)}
+              className="btn-primary mt-2 w-full justify-center"
+            >
+              Calculate My Cost
+            </Link>
             <div className="mt-2 border-t border-black/5 pt-3">
               {!ready ? null : user ? (
                 <div className="flex flex-col gap-1">
