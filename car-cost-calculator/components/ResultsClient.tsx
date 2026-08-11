@@ -7,7 +7,6 @@ import CostBreakdown from "@/components/CostBreakdown";
 import CostChart from "@/components/CostChart";
 import { CarCostResponse } from "@/types/car";
 import { buildShareUrl, decodeShareData } from "@/lib/shareLink";
-import { whatsappShareUrl, xShareUrl, linkedinShareUrl } from "@/lib/socialShare";
 import { getTrend, priceHistoryKey, recordPrice, PriceTrend } from "@/lib/priceHistory";
 
 export default function ResultsClient() {
@@ -137,42 +136,6 @@ export default function ResultsClient() {
             {copyState === "copied" ? "Link copied ✓" : copyState === "error" ? "Couldn't copy" : "Copy shareable link"}
           </button>
         </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="text-xs text-ink/40 self-center mr-1">Share:</span>
-        <a
-          href={whatsappShareUrl(
-            `My estimated car ownership cost for ${data.vehicle.make} ${data.vehicle.model}:`,
-            buildShareUrl(data, currency)
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs rounded-full border border-black/10 px-3 py-1.5 hover:bg-ink/5"
-        >
-          WhatsApp
-        </a>
-        <a
-          href={xShareUrl(
-            `My estimated car ownership cost for ${data.vehicle.make} ${data.vehicle.model}: ${currency} ${Math.round(
-              data.total.monthly
-            ).toLocaleString()}/month`,
-            buildShareUrl(data, currency)
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs rounded-full border border-black/10 px-3 py-1.5 hover:bg-ink/5"
-        >
-          X
-        </a>
-        <a
-          href={linkedinShareUrl(buildShareUrl(data, currency))}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs rounded-full border border-black/10 px-3 py-1.5 hover:bg-ink/5"
-        >
-          LinkedIn
-        </a>
       </div>
 
       {!isSharedView && trend && trend.direction !== "new" && trend.previousPrice !== null && (

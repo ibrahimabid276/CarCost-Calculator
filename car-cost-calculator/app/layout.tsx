@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import Header from "@/components/Header";
@@ -42,6 +43,7 @@ export default function RootLayout({
           <Header />
           {children}
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
