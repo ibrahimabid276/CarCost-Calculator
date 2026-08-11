@@ -113,21 +113,21 @@ export default function ComparePage() {
             </div>
           </div>
           <div className="mt-4">
-            <label className="field-label">Insurance</label>
+            <label className="field-label">Include insurance in this comparison?</label>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setHasInsurance(true)}
                 className={`px-4 py-2 rounded-full text-sm border ${hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
               >
-                Include insurance
+                Yes
               </button>
               <button
                 type="button"
                 onClick={() => setHasInsurance(false)}
                 className={`px-4 py-2 rounded-full text-sm border ${!hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
               >
-                Exclude insurance
+                No
               </button>
             </div>
           </div>
