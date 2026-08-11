@@ -46,7 +46,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/5 bg-paper/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-black/5 bg-paper/90 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-semibold tracking-tight">
           <Image
@@ -77,7 +77,10 @@ export default function Header() {
 
         {/* Desktop auth area */}
         <div className="hidden items-center gap-3 sm:flex">
-          <a href={FEEDBACK_MAILTO} className="btn-secondary !px-4 !py-2 text-sm">
+          <a
+            href={FEEDBACK_MAILTO}
+            className="btn-secondary relative z-10 !px-4 !py-2 text-sm pointer-events-auto"
+          >
             Give Feedback
           </a>
           {!ready ? null : user ? (
