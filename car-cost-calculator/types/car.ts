@@ -22,6 +22,12 @@ export interface CarCostRequest {
   drivingDaysPerMonth: number;
   fuelEconomyMode: "auto" | "manual";
   manualFuelEconomy?: number; // km/L or km/kWh
+  // Explicit mode switch for fuel/electricity price (replaces the old
+  // "fill this in only if you want to override" implicit behavior).
+  // "manual"    -> activePetrolPrice MUST equal manualFuelPrice, always.
+  // "estimated" -> activePetrolPrice comes from the live search pipeline.
+  // Defaults to "estimated" when omitted, for backward compatibility.
+  fuelPriceMode?: "manual" | "estimated";
   manualFuelPrice?: number;
 
   hasInsurance: boolean;
@@ -64,6 +70,11 @@ export interface FuelEstimate extends EstimateBlock {
   unit: string; // "km/L" or "km/kWh"
   label: string; // "Fuel" or "Electricity" — use this instead of hardcoding "Fuel" in the UI
   chargingLossPercent?: number; // Electric only — assumed charging loss applied on top of consumption
+  priceMode: "manual" | "estimated";
+  // ISO timestamp of when the estimated price was fetched. Only set when
+  // priceMode is "estimated" — this is "as of" the calculation, not a
+  // claim that the price updates live in the browser.
+  priceAsOf?: string;
 }
 
 export interface GovernmentBlock extends EstimateBlock {

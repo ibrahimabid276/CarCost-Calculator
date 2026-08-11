@@ -109,11 +109,15 @@ export default function CostBreakdown({
                       <td colSpan={5} className="px-5 py-4">
                         {key === "fuel" && (
                           <p className="text-xs text-ink/60 mb-2">
-                            {data.fuel.label} price used: {currency} {data.fuel.pricePerUnit.toLocaleString()} per{" "}
+                            {data.fuel.priceMode === "manual" ? "Manual" : "Estimated"} {data.fuel.label.toLowerCase()} price used:{" "}
+                            {currency} {data.fuel.pricePerUnit.toLocaleString()} per{" "}
                             {data.fuel.unit.includes("kWh") ? "kWh" : "liter"} · Economy used:{" "}
                             {data.fuel.economy} {data.fuel.unit}
                             {data.fuel.chargingLossPercent !== undefined && (
                               <> · Assumed charging loss: {data.fuel.chargingLossPercent}%</>
+                            )}
+                            {data.fuel.priceMode === "estimated" && data.fuel.priceAsOf && (
+                              <> · Updated: {new Date(data.fuel.priceAsOf).toLocaleDateString()}</>
                             )}
                           </p>
                         )}

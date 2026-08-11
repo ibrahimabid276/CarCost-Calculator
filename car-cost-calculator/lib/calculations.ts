@@ -99,6 +99,28 @@ function profileFor(country: string): CurrencyProfile {
   return CURRENCY_PROFILES[currencyForCountry(country)] || CURRENCY_PROFILES["$"];
 }
 
+// Pakistani vehicle registration fees and annual token tax are set
+// provincially (Excise & Taxation departments), not federally, so the same
+// car can legitimately have a different government charge in Lahore vs
+// Karachi vs Islamabad. The calculator only collects "city" from the user
+// (no separate province question, per product decision to avoid adding
+// fields) — this maps the existing city selector to its province so the
+// search query can target the right jurisdiction without asking anything
+// new.
+const PAKISTAN_CITY_PROVINCE: Record<string, string> = {
+  lahore: "Punjab",
+  rawalpindi: "Punjab",
+  faisalabad: "Punjab",
+  multan: "Punjab",
+  karachi: "Sindh",
+  islamabad: "Islamabad Capital Territory (ICT)",
+  peshawar: "Khyber Pakhtunkhwa",
+};
+
+function pakistanProvinceForCity(city: string): string | null {
+  return PAKISTAN_CITY_PROVINCE[city.trim().toLowerCase()] || null;
+}
+
 // Fuel economy (km/L or km/kWh) doesn't depend on currency/country — kept separate.
 const FUEL_ECONOMY_BY_TYPE: Record<string, number> = {
   Petrol: 13,
@@ -176,6 +198,18 @@ export async function calculateCarCost(
   const isElectric = input.fuelType === "Electric";
   const profile = profileFor(input.country);
 
+  // Registration fee and token tax are usually a function of engine capacity
+  // and/or declared vehicle value, not a flat number — feed in whatever the
+  // user already supplied (engineSize is always collected; vehiclePrice
+  // only exists when they filled in the Financing section) rather than
+  // inventing one. Province narrows the search to the right provincial
+  // Excise & Taxation schedule instead of a generic national figure.
+  const province = pakistanProvinceForCity(input.city);
+  const govLocationLabel = province ? `${input.city}, ${province}, Pakistan` : locationLabel;
+  const vehicleValueLabel = input.financing?.vehiclePrice
+    ? ` for a vehicle valued around ${Math.round(input.financing.vehiclePrice).toLocaleString()}`
+    : "";
+
   const queries = {
     fuelPrice: isElectric
       ? `current residential electricity price per unit kWh ${input.country}`
@@ -185,8 +219,8 @@ export async function calculateCarCost(
       : `${vehicleLabel} average fuel consumption km/l real world`,
     maintenance: `${vehicleLabel} annual maintenance cost ${locationLabel}`,
     insurance: `${vehicleLabel} car insurance annual premium ${input.country}`,
-    governmentOneTime: `${vehicleLabel} one-time vehicle registration fee ${locationLabel}`,
-    governmentAnnual: `${locationLabel} annual road tax token tax ${vehicleLabel}`,
+    governmentOneTime: `${vehicleLabel} one-time vehicle registration fee ${govLocationLabel}${vehicleValueLabel}`,
+    governmentAnnual: `${govLocationLabel} annual road tax token tax ${vehicleLabel}${vehicleValueLabel}`,
   };
 
   let results: Record<string, SerperSearchResponse | null> = {};
@@ -229,11 +263,24 @@ export async function calculateCarCost(
     }
   }
 
-  let pricePerUnit = input.manualFuelPrice || 0;
+  // Single source of truth for the active petrol/electricity price:
+  //   fuelPriceMode === "manual"    -> ALWAYS input.manualFuelPrice, no exceptions
+  //   fuelPriceMode === "estimated" -> live search result (baseline only if search is down)
+  // This one `pricePerUnit` value feeds fuelMonthly/fuelAnnual below, which
+  // in turn feed total.monthly/annual/threeYear/fiveYear/costPerKm — so
+  // every downstream number derives from this single value, never a
+  // second copy of the logic.
+  const priceMode: "manual" | "estimated" = input.fuelPriceMode === "manual" ? "manual" : "estimated";
+  let pricePerUnit = 0;
   const priceSources: SourceRef[] = [];
   const priceLabel = isElectric ? "Electricity price" : "Fuel price";
   let priceStatus: EstimateStatus;
-  if (input.manualFuelPrice) {
+  let priceAsOf: string | undefined;
+  if (priceMode === "manual") {
+    // Validation layer guarantees manualFuelPrice is a positive number
+    // whenever mode is "manual" — if it's somehow missing here, fail safe
+    // to 0 rather than silently switching to Estimated.
+    pricePerUnit = input.manualFuelPrice || 0;
     priceStatus = "user";
     priceSources.push({ label: `User-provided ${priceLabel.toLowerCase()}` });
   } else {
@@ -248,10 +295,12 @@ export async function calculateCarCost(
     if (med) {
       pricePerUnit = med;
       priceStatus = "search";
+      priceAsOf = new Date().toISOString();
       priceSources.push(...buildSources(priceLabel, resp, "search"));
     } else {
       pricePerUnit = isElectric ? profile.electricityPricePerUnit : profile.fuelPricePerUnit;
       priceStatus = searchDegraded ? "baseline" : "unavailable";
+      if (priceStatus === "baseline") priceAsOf = new Date().toISOString();
       priceSources.push(...buildSources(priceLabel, resp, "baseline"));
     }
   }
@@ -286,6 +335,8 @@ export async function calculateCarCost(
     unit: isElectric ? "km/kWh" : "km/L",
     label: isElectric ? "Electricity" : "Fuel",
     chargingLossPercent: isElectric ? EV_CHARGING_LOSS_PERCENT : undefined,
+    priceMode,
+    priceAsOf,
     sources: [...priceSources, ...economySources],
     note: isElectric
       ? `Assumes ${EV_CHARGING_LOSS_PERCENT}% charging loss on top of vehicle consumption.`

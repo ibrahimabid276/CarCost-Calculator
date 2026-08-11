@@ -63,6 +63,17 @@ export function validateCarCostRequest(body: unknown): ValidationResult {
     errors.push("Vehicle price is required when financing is selected.");
   }
 
+  // Fuel/electricity price mode. Defaults to "estimated" so old clients
+  // that never send this field keep working. When "manual" is explicitly
+  // selected, a positive price is mandatory — we never silently fall back
+  // to Estimated, and we never accept a negative/zero/invalid number.
+  const fuelPriceMode: CarCostRequest["fuelPriceMode"] =
+    b.fuelPriceMode === "manual" ? "manual" : "estimated";
+  const manualFuelPrice = toPositiveNumber(b.manualFuelPrice);
+  if (fuelPriceMode === "manual" && (!manualFuelPrice || manualFuelPrice <= 0)) {
+    errors.push("Enter a valid petrol/fuel price (greater than 0) when using Manual mode.");
+  }
+
   if (errors.length) return { valid: false, errors };
 
   const sanitized: CarCostRequest = {
@@ -78,7 +89,8 @@ export function validateCarCostRequest(body: unknown): ValidationResult {
     drivingDaysPerMonth: drivingDaysPerMonth as number,
     fuelEconomyMode: b.fuelEconomyMode === "manual" ? "manual" : "auto",
     manualFuelEconomy: toPositiveNumber(b.manualFuelEconomy),
-    manualFuelPrice: toPositiveNumber(b.manualFuelPrice),
+    fuelPriceMode,
+    manualFuelPrice,
     hasInsurance: b.hasInsurance !== false,
     manualInsuranceAnnual: toPositiveNumber(b.manualInsuranceAnnual),
     manualMaintenanceMonthly: toPositiveNumber(b.manualMaintenanceMonthly),

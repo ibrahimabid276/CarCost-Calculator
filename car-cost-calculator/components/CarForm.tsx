@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { CarCostRequest, FuelType } from "@/types/car";
 import { COUNTRIES } from "@/lib/countries";
+import { currencyForCountry } from "@/lib/currency";
+
+// Exact URL requested for the "Browse Petrol Price" button — opens Google's
+// live results in a new tab so the user can check today's price themselves.
+// The calculator never scrapes this page or depends on it programmatically.
+const BROWSE_PETROL_PRICE_URL =
+  "https://www.google.com/search?sca_esv=699286c2dbd4e6d4&sxsrf=APpeQns9p42JUtjfc5wkZO7vaXP-u4z29Q:1786439986828&q=petrol+price+per+kilometer+today+live&spell=1&sa=X&ved=2ahUKEwjw-c7Gn5iWAxUdUqQEHd3TLzsQBSgAegQIEhAB&biw=1920&bih=945&dpr=1";
 
 const CITIES = [
   "Lahore",
@@ -37,6 +44,7 @@ export default function CarForm({ onSubmit, submitting }: Props) {
   const [drivingDaysPerMonth, setDrivingDaysPerMonth] = useState<number | "">("");
   const [fuelEconomyMode, setFuelEconomyMode] = useState<"auto" | "manual">("auto");
   const [manualFuelEconomy, setManualFuelEconomy] = useState<number | "">("");
+  const [fuelPriceMode, setFuelPriceMode] = useState<"manual" | "estimated">("estimated");
   const [manualFuelPrice, setManualFuelPrice] = useState<number | "">("");
 
   const [hasInsurance, setHasInsurance] = useState(true);
@@ -67,6 +75,12 @@ export default function CarForm({ onSubmit, submitting }: Props) {
       setFormError("Please enter a vehicle price to calculate financing.");
       return;
     }
+    if (fuelPriceMode === "manual" && (manualFuelPrice === "" || Number(manualFuelPrice) <= 0)) {
+      setFormError(
+        `Please enter a valid ${fuelType === "Electric" ? "electricity" : "petrol"} price greater than 0, or switch to Estimated.`
+      );
+      return;
+    }
 
     const data: CarCostRequest = {
       make,
@@ -81,7 +95,9 @@ export default function CarForm({ onSubmit, submitting }: Props) {
       drivingDaysPerMonth: Number(drivingDaysPerMonth),
       fuelEconomyMode,
       manualFuelEconomy: manualFuelEconomy === "" ? undefined : Number(manualFuelEconomy),
-      manualFuelPrice: manualFuelPrice === "" ? undefined : Number(manualFuelPrice),
+      fuelPriceMode,
+      manualFuelPrice:
+        fuelPriceMode === "manual" && manualFuelPrice !== "" ? Number(manualFuelPrice) : undefined,
       hasInsurance,
       manualInsuranceAnnual:
         manualInsuranceAnnual === "" ? undefined : Number(manualInsuranceAnnual),
@@ -234,15 +250,56 @@ export default function CarForm({ onSubmit, submitting }: Props) {
           </div>
           <div className="sm:col-span-2">
             <label className="field-label">
-              {fuelType === "Electric" ? "Manual electricity price override (optional)" : "Manual fuel price override (optional)"}
+              {fuelType === "Electric"
+                ? `Electricity Price (${currencyForCountry(country)}/kWh)`
+                : `Petrol Price (${currencyForCountry(country)}/L)`}
             </label>
-            <input
-              type="number"
-              className="field-input"
-              placeholder="Leave blank to use current searched price"
-              value={manualFuelPrice}
-              onChange={(e) => setManualFuelPrice(e.target.value === "" ? "" : Number(e.target.value))}
-            />
+            <div className="flex flex-wrap gap-3 mb-2">
+              <button
+                type="button"
+                onClick={() => setFuelPriceMode("estimated")}
+                className={`px-4 py-2 rounded-full text-sm border ${
+                  fuelPriceMode === "estimated" ? "bg-ink text-paper border-ink" : "border-black/15"
+                }`}
+              >
+                Estimated
+              </button>
+              <button
+                type="button"
+                onClick={() => setFuelPriceMode("manual")}
+                className={`px-4 py-2 rounded-full text-sm border ${
+                  fuelPriceMode === "manual" ? "bg-ink text-paper border-ink" : "border-black/15"
+                }`}
+              >
+                I&apos;ll enter my own
+              </button>
+              <a
+                href={BROWSE_PETROL_PRICE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-full text-sm border border-black/15 hover:bg-black/5"
+              >
+                Browse Petrol Price ↗
+              </a>
+            </div>
+            {fuelPriceMode === "manual" ? (
+              <input
+                type="number"
+                className="field-input"
+                placeholder={fuelType === "Electric" ? "e.g. 55" : "e.g. 270"}
+                value={manualFuelPrice}
+                min={0.01}
+                step="0.01"
+                onChange={(e) => setManualFuelPrice(e.target.value === "" ? "" : Number(e.target.value))}
+              />
+            ) : (
+              <p className="text-xs text-ink/50">
+                We&apos;ll look up a current {fuelType === "Electric" ? "electricity" : "fuel"} price for{" "}
+                {country} when you calculate, and show the value and date used in your results. Use{" "}
+                &quot;Browse Petrol Price&quot; above to check today&apos;s price yourself, or switch to
+                &quot;I&apos;ll enter my own&quot; to set it exactly.
+              </p>
+            )}
           </div>
         </div>
       </section>
