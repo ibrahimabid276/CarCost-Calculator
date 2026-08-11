@@ -69,7 +69,7 @@ export default function Header() {
             </>
           ) : null}
           <Link href="/calculator" className="btn-primary !px-4 !py-2 text-sm">
-            Calculate My Cost
+            Calculate My Car Cost
           </Link>
         </div>
 
@@ -119,7 +119,7 @@ export default function Header() {
               onClick={() => setMenuOpen(false)}
               className="btn-primary mt-2 w-full justify-center"
             >
-              Calculate My Cost
+              Calculate My Car Cost
             </Link>
             <div className="mt-2 border-t border-black/5 pt-3">
               {!ready ? null : user ? (
