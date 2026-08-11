@@ -12,27 +12,6 @@ const NAV_LINKS = [
   { href: "/leaderboard", label: "Leaderboard" },
 ];
 
-const FEEDBACK_EMAIL = "ibrahimabid276@gmail.com";
-const FEEDBACK_SUBJECT = "Car Cost Calculator Feedback";
-const FEEDBACK_BODY = [
-  "Hi Ibrahim,",
-  "",
-  "Feedback about Car Cost Calculator:",
-  "",
-  "What I liked:",
-  "",
-  "What could be improved:",
-  "",
-  "Bug/problem I found:",
-  "",
-  "Additional comments:",
-  "",
-].join("\r\n");
-
-const FEEDBACK_MAILTO = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(
-  FEEDBACK_SUBJECT
-)}&body=${encodeURIComponent(FEEDBACK_BODY)}`;
-
 export default function Header() {
   const { user, ready, signOut } = useAuth();
   const pathname = usePathname();
@@ -77,12 +56,6 @@ export default function Header() {
 
         {/* Desktop auth area */}
         <div className="hidden items-center gap-3 sm:flex">
-          <a
-            href={FEEDBACK_MAILTO}
-            className="btn-secondary relative z-10 !px-4 !py-2 text-sm pointer-events-auto"
-          >
-            Give Feedback
-          </a>
           {!ready ? null : user ? (
             <>
               <span className="text-sm text-ink/70">
@@ -148,13 +121,6 @@ export default function Header() {
                 {l.label}
               </Link>
             ))}
-            <a
-              href={FEEDBACK_MAILTO}
-              onClick={() => setMenuOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink/80 hover:bg-ink/5"
-            >
-              Give Feedback
-            </a>
             <div className="mt-2 border-t border-black/5 pt-3">
               {!ready ? null : user ? (
                 <div className="flex flex-col gap-1">
