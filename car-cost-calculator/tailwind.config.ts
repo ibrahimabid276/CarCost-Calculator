@@ -15,7 +15,7 @@ const config: Config = {
         moss: "#2F5D50",
         rust: "#B5502F",
         slate: {
-          850: "#16202B",
+          850: "#4A2C20",
           950: "#0B1116",
         },
       },

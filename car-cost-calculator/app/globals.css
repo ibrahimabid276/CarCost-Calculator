@@ -20,7 +20,7 @@
    already defined in the Tailwind config. */
 html.dark {
   --color-ink: 247 245 240;
-  --color-paper: 22 32 43;
+  --color-paper: 74 44 32;
 }
 
 @layer base {
