@@ -31,7 +31,7 @@ export default function ComparisonTable({
     <div className="card overflow-x-auto">
       <table className="w-full text-sm min-w-[560px]">
         <thead>
-          <tr className="border-b border-black/10">
+          <tr className="border-b border-black/10 dark:border-white/10">
             <th className="py-3 px-5 text-left font-medium text-ink/50">Vehicle</th>
             {results.map((r, i) => (
               <th
@@ -52,7 +52,7 @@ export default function ComparisonTable({
         </thead>
         <tbody>
           {ROWS.map((row) => (
-            <tr key={row.label} className="border-b border-black/5">
+            <tr key={row.label} className="border-b border-black/5 dark:border-white/5">
               <td className="py-3 px-5 text-ink/60">{row.label}</td>
               {results.map((r, i) => {
                 let val: number;

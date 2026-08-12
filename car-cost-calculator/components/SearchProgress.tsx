@@ -40,7 +40,7 @@ export default function SearchProgress() {
                     ? "bg-moss text-white animate-checkIn"
                     : active
                     ? "border-2 border-brass animate-pulse"
-                    : "border border-black/15"
+                    : "border border-black/15 dark:border-white/15"
                 }`}
               >
                 {done ? "✓" : ""}

@@ -20,7 +20,7 @@ export default function ResultsCard({
 }) {
   return (
     <div className="space-y-8">
-      <div className="card p-8 sm:p-12 text-center bg-gradient-to-b from-white to-paper">
+      <div className="card p-8 sm:p-12 text-center bg-gradient-to-b from-white to-paper dark:from-slate-850 dark:to-slate-850">
         <p className="text-sm uppercase tracking-wide text-ink/50 mb-3">
           Your estimated recurring ownership cost
         </p>
@@ -69,8 +69,8 @@ export default function ResultsCard({
             {fmt(data.total.threeYear, currency)}
           </p>
         </div>
-        <div className="card p-6 bg-rust text-paper">
-          <p className="text-sm text-paper/70">Estimated ownership expenses over 5 years</p>
+        <div className="card p-6 bg-rust text-paper dark:text-white">
+          <p className="text-sm text-paper/70 dark:text-white/70">Estimated ownership expenses over 5 years</p>
           <p className="mt-1 text-3xl font-display font-semibold">
             {fmt(data.total.fiveYear, currency)}
           </p>

@@ -6,6 +6,21 @@
   --font-display: "Fraunces", serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+
+  /* ink/paper as RGB channels so Tailwind's opacity modifiers (e.g. text-ink/70)
+     keep working. Light-mode values are identical to the original hard-coded
+     hex (#10151A / #F7F5F0), so light mode is pixel-for-pixel unchanged. */
+  --color-ink: 16 21 26;
+  --color-paper: 247 245 240;
+}
+
+/* Dark mode: ink/paper swap roles so every existing text-ink / bg-paper
+   usage across the app automatically resolves to a readable, on-theme color
+   with no per-component overrides needed. Reuses the slate-850 dark surface
+   already defined in the Tailwind config. */
+html.dark {
+  --color-ink: 247 245 240;
+  --color-paper: 22 32 43;
 }
 
 @layer base {
@@ -20,9 +35,10 @@
   }
 }
 
-/* Dark mode: only the page background changes, per explicit request — no
-   other colors/typography are touched. Scoped to html.dark so it can never
-   affect the default light theme. */
+/* Dark mode page background. Scoped to html.dark so it can never affect the
+   default light theme. Surface/text colors for cards, inputs, and buttons
+   are handled via the --color-ink/--color-paper tokens above and a small
+   set of dark: overrides on literal white/black utilities below. */
 html.dark body {
   background: linear-gradient(to top right, #F9AD2A 0%, #E5632D 50%, #CF1D2E 100%);
   background-attachment: fixed;
@@ -33,7 +49,7 @@ html.dark body {
     @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
   }
   .card {
-    @apply rounded-xl2 bg-white shadow-card border border-black/5;
+    @apply rounded-xl2 bg-white shadow-card border border-black/5 dark:bg-slate-850 dark:border-white/10 dark:shadow-none;
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink text-paper px-6 py-3 font-medium transition-colors hover:bg-moss active:scale-[0.98];
@@ -45,6 +61,6 @@ html.dark body {
     @apply block text-sm font-medium text-ink/70 mb-1.5;
   }
   .field-input {
-    @apply w-full rounded-lg border border-black/10 bg-white px-3.5 py-2.5 text-ink placeholder:text-ink/30 outline-none transition focus:border-moss focus:ring-2 focus:ring-moss/20;
+    @apply w-full rounded-lg border border-black/10 bg-white px-3.5 py-2.5 text-ink placeholder:text-ink/30 outline-none transition focus:border-moss focus:ring-2 focus:ring-moss/20 dark:border-white/10 dark:bg-slate-850 disabled:opacity-50;
   }
 }

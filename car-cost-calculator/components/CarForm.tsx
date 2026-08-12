@@ -223,7 +223,7 @@ export default function CarForm({ onSubmit, submitting }: Props) {
                 type="button"
                 onClick={() => setFuelEconomyMode("auto")}
                 className={`px-4 py-2 rounded-full text-sm border ${
-                  fuelEconomyMode === "auto" ? "bg-ink text-paper border-ink" : "border-black/15"
+                  fuelEconomyMode === "auto" ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"
                 }`}
               >
                 Use estimated value
@@ -232,7 +232,7 @@ export default function CarForm({ onSubmit, submitting }: Props) {
                 type="button"
                 onClick={() => setFuelEconomyMode("manual")}
                 className={`px-4 py-2 rounded-full text-sm border ${
-                  fuelEconomyMode === "manual" ? "bg-ink text-paper border-ink" : "border-black/15"
+                  fuelEconomyMode === "manual" ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"
                 }`}
               >
                 I&apos;ll enter my own
@@ -259,7 +259,7 @@ export default function CarForm({ onSubmit, submitting }: Props) {
                 type="button"
                 onClick={() => setFuelPriceMode("estimated")}
                 className={`px-4 py-2 rounded-full text-sm border ${
-                  fuelPriceMode === "estimated" ? "bg-ink text-paper border-ink" : "border-black/15"
+                  fuelPriceMode === "estimated" ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"
                 }`}
               >
                 Estimated
@@ -268,7 +268,7 @@ export default function CarForm({ onSubmit, submitting }: Props) {
                 type="button"
                 onClick={() => setFuelPriceMode("manual")}
                 className={`px-4 py-2 rounded-full text-sm border ${
-                  fuelPriceMode === "manual" ? "bg-ink text-paper border-ink" : "border-black/15"
+                  fuelPriceMode === "manual" ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"
                 }`}
               >
                 I&apos;ll enter my own
@@ -277,7 +277,7 @@ export default function CarForm({ onSubmit, submitting }: Props) {
                 href={BROWSE_PETROL_PRICE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-full text-sm border border-black/15 hover:bg-black/5"
+                className="px-4 py-2 rounded-full text-sm border border-black/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5"
               >
                 Browse Petrol Price ↗
               </a>
@@ -314,14 +314,14 @@ export default function CarForm({ onSubmit, submitting }: Props) {
               <button
                 type="button"
                 onClick={() => setHasInsurance(true)}
-                className={`px-4 py-2 rounded-full text-sm border ${hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+                className={`px-4 py-2 rounded-full text-sm border ${hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"}`}
               >
                 I have insurance
               </button>
               <button
                 type="button"
                 onClick={() => setHasInsurance(false)}
-                className={`px-4 py-2 rounded-full text-sm border ${!hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+                className={`px-4 py-2 rounded-full text-sm border ${!hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"}`}
               >
                 I don&apos;t have insurance
               </button>
@@ -359,14 +359,14 @@ export default function CarForm({ onSubmit, submitting }: Props) {
           <button
             type="button"
             onClick={() => setIsFinancing(true)}
-            className={`px-4 py-2 rounded-full text-sm border ${isFinancing ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+            className={`px-4 py-2 rounded-full text-sm border ${isFinancing ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"}`}
           >
             Yes, I&apos;m financing
           </button>
           <button
             type="button"
             onClick={() => setIsFinancing(false)}
-            className={`px-4 py-2 rounded-full text-sm border ${!isFinancing ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+            className={`px-4 py-2 rounded-full text-sm border ${!isFinancing ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"}`}
           >
             No financing
           </button>

@@ -76,7 +76,7 @@ export default function CostBreakdown({
       <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-black/10 text-left text-ink/50">
+            <tr className="border-b border-black/10 dark:border-white/10 text-left text-ink/50">
               <th className="py-3 px-5 font-medium">Expense</th>
               <th className="py-3 px-5 font-medium">Monthly</th>
               <th className="py-3 px-5 font-medium">Annual</th>
@@ -90,7 +90,7 @@ export default function CostBreakdown({
               const displayLabel = label ?? data.fuel.label;
               return (
                 <Fragment key={key}>
-                  <tr className="border-b border-black/5">
+                  <tr className="border-b border-black/5 dark:border-white/5">
                     <td className="py-3 px-5 font-medium">{displayLabel}</td>
                     <td className="py-3 px-5 font-mono">{pkr(b.monthly, currency)}</td>
                     <td className="py-3 px-5 font-mono">{pkr(b.annual, currency)}</td>

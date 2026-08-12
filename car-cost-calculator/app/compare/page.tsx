@@ -118,14 +118,14 @@ export default function ComparePage() {
               <button
                 type="button"
                 onClick={() => setHasInsurance(true)}
-                className={`px-4 py-2 rounded-full text-sm border ${hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+                className={`px-4 py-2 rounded-full text-sm border ${hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"}`}
               >
                 Yes
               </button>
               <button
                 type="button"
                 onClick={() => setHasInsurance(false)}
-                className={`px-4 py-2 rounded-full text-sm border ${!hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15"}`}
+                className={`px-4 py-2 rounded-full text-sm border ${!hasInsurance ? "bg-ink text-paper border-ink" : "border-black/15 dark:border-white/15"}`}
               >
                 No
               </button>

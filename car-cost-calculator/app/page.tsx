@@ -23,7 +23,7 @@ export default function HomePage() {
   return (
     <main>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-black/5">
+      <section className="relative overflow-hidden border-b border-black/5 dark:border-white/10">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,rgba(47,93,80,0.08),transparent_60%)]" />
         <div className="container-page pt-20 pb-24 sm:pt-28 sm:pb-32 grid lg:grid-cols-2 gap-12 items-center">
           <div>
@@ -61,7 +61,7 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="container-page py-20 border-b border-black/5">
+      <section className="container-page py-20 border-b border-black/5 dark:border-white/10">
         <h2 className="text-2xl sm:text-3xl font-display font-semibold mb-10">
           How it works
         </h2>
@@ -77,13 +77,13 @@ export default function HomePage() {
       </section>
 
       {/* What we calculate */}
-      <section className="container-page py-20 border-b border-black/5">
+      <section className="container-page py-20 border-b border-black/5 dark:border-white/10">
         <h2 className="text-2xl sm:text-3xl font-display font-semibold mb-10">
           What we calculate
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {whatWeCalculate.map((item) => (
-            <div key={item.label} className="rounded-xl2 border border-black/5 p-5 bg-white/60">
+            <div key={item.label} className="rounded-xl2 border border-black/5 p-5 bg-white/60 dark:border-white/10 dark:bg-white/5">
               <p className="font-semibold">{item.label}</p>
               <p className="mt-1.5 text-sm text-ink/60">{item.detail}</p>
             </div>
@@ -92,7 +92,7 @@ export default function HomePage() {
       </section>
 
       {/* Compare cars teaser */}
-      <section className="container-page py-20 border-b border-black/5">
+      <section className="container-page py-20 border-b border-black/5 dark:border-white/10">
         <div className="card p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-display font-semibold">Compare cars side by side</h2>

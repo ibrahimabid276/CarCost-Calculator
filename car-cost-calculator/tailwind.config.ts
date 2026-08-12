@@ -9,8 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#10151A",
-        paper: "#F7F5F0",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
         brass: "#C08A3E",
         moss: "#2F5D50",
         rust: "#B5502F",

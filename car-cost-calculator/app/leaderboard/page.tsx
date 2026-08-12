@@ -71,7 +71,7 @@ export default function LeaderboardPage() {
           <div className="mt-6 card overflow-x-auto">
             <table className="w-full text-sm min-w-[640px]">
               <thead>
-                <tr className="border-b border-black/10 text-left text-ink/50">
+                <tr className="border-b border-black/10 dark:border-white/10 text-left text-ink/50">
                   <th className="py-3 px-5 font-medium">#</th>
                   <th className="py-3 px-5 font-medium">Vehicle</th>
                   <th className="py-3 px-5 font-medium">Monthly cost</th>
@@ -82,7 +82,7 @@ export default function LeaderboardPage() {
               </thead>
               <tbody>
                 {data.cars.map((car, i) => (
-                  <tr key={`${car.make}-${car.model}`} className="border-b border-black/5">
+                  <tr key={`${car.make}-${car.model}`} className="border-b border-black/5 dark:border-white/5">
                     <td className="py-3 px-5 text-ink/40">{i + 1}</td>
                     <td className="py-3 px-5 font-medium">
                       {car.make} {car.model} {car.variant}
