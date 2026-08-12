@@ -20,6 +20,14 @@
   }
 }
 
+/* Dark mode: only the page background changes, per explicit request — no
+   other colors/typography are touched. Scoped to html.dark so it can never
+   affect the default light theme. */
+html.dark body {
+  background: linear-gradient(to top right, #F9AD2A 0%, #E5632D 50%, #CF1D2E 100%);
+  background-attachment: fixed;
+}
+
 @layer components {
   .container-page {
     @apply mx-auto w-full max-w-6xl px-5 sm:px-8;

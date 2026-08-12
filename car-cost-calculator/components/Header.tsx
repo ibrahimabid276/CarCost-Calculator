@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 
 const NAV_LINKS = [
   { href: "/calculator", label: "Calculator" },
@@ -13,6 +14,7 @@ const NAV_LINKS = [
 
 export default function Header() {
   const { user, ready, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -22,6 +24,31 @@ export default function Header() {
     setMenuOpen(false);
     router.push("/");
   }
+
+  const ThemeToggleButton = ({ className = "" }: { className?: string }) => (
+    <button
+      onClick={toggleTheme}
+      aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+      className={`flex items-center gap-2 rounded-full border border-black/10 bg-white/40 px-3.5 py-2 text-sm font-medium text-ink/70 transition-colors hover:bg-white/60 hover:text-ink ${className}`}
+    >
+      {theme === "light" ? (
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+          Light
+        </>
+      ) : (
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+          </svg>
+          Dark
+        </>
+      )}
+    </button>
+  );
 
   return (
     <header className="sticky top-0 z-50 px-4 pt-3 pb-3 sm:px-6">
@@ -60,6 +87,7 @@ export default function Header() {
 
           {/* Desktop auth + CTA area */}
           <div className="hidden items-center gap-3 sm:flex">
+            <ThemeToggleButton />
             {!ready ? null : user ? (
               <>
                 <span className="text-sm text-ink/70">
@@ -113,6 +141,7 @@ export default function Header() {
       {menuOpen && (
         <div className="mx-auto mt-2 max-w-5xl overflow-hidden rounded-2xl border border-black/5 bg-paper/85 shadow-soft backdrop-blur-lg sm:hidden">
           <div className="flex flex-col gap-1 px-4 py-4">
+            <ThemeToggleButton className="mb-1 w-full justify-center" />
             {NAV_LINKS.map((l) => {
               const active = pathname === l.href;
               return (

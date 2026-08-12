@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import Header from "@/components/Header";
 
 const display = Fraunces({
@@ -40,8 +41,10 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
         <AuthProvider>
-          <Header />
-          {children}
+          <ThemeProvider>
+            <Header />
+            {children}
+          </ThemeProvider>
         </AuthProvider>
         <Analytics />
       </body>
