@@ -100,6 +100,13 @@ export default function HomePage() {
               Corolla vs Civic vs City — see fuel, maintenance, insurance and
               total ownership cost lined up, with the cheapest option highlighted.
             </p>
+            <p className="mt-3 text-sm text-ink/50">
+              Or skip straight to the{" "}
+              <Link href="/leaderboard" className="text-moss underline">
+                cheapest cars to own
+              </Link>
+              .
+            </p>
           </div>
           <Link href="/compare" className="btn-primary whitespace-nowrap">
             Compare Cars
