@@ -5,6 +5,25 @@ export const metadata: Metadata = {
   title: "About the Creator — CarCost Calculator",
   description:
     "CarCost was created by Syed Muhammad Ibrahim, an AI Agent & Automation Engineer, to make the real cost of owning and running a car easy to understand.",
+  alternates: { canonical: "/about" },
+};
+
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Syed Muhammad Ibrahim",
+  jobTitle: "AI Agent & Automation Engineer",
+  url: "https://car-cost-calculator.site/about",
+  sameAs: ["https://www.linkedin.com/in/iamibrahimabid", "https://github.com/ibrahimabid276"],
+};
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://car-cost-calculator.site/" },
+    { "@type": "ListItem", position: 2, name: "About the Creator", item: "https://car-cost-calculator.site/about" },
+  ],
 };
 
 function LinkedInIcon() {
@@ -56,6 +75,14 @@ const LINKS = [
 export default function AboutPage() {
   return (
     <main className="container-page py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Link href="/" className="text-sm text-ink/50 hover:text-ink">
         ← Back home
       </Link>

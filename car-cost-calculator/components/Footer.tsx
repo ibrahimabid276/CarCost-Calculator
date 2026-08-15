@@ -5,6 +5,7 @@ const QUICK_LINKS = [
   { href: "/calculator", label: "Calculator" },
   { href: "/compare", label: "Compare" },
   { href: "/leaderboard", label: "Cheapest Cars" },
+  { href: "/guides", label: "Guides" },
 ];
 
 export default function Footer() {

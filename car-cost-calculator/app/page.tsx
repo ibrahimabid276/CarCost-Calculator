@@ -115,6 +115,13 @@ export default function HomePage() {
           driving conditions, maintenance requirements, insurance provider,
           government charges and other factors.
         </p>
+        <p className="mt-3 text-sm text-ink/50">
+          New to this?{" "}
+          <Link href="/guides/how-to-calculate-car-ownership-cost-pakistan" className="text-moss underline">
+            Read how car ownership cost is calculated
+          </Link>
+          .
+        </p>
       </section>
     </main>
   );

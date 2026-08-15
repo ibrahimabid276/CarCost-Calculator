@@ -15,6 +15,7 @@ export async function generateMetadata({
   const fallback: Metadata = {
     title: "Your Ownership Cost — CarCost Calculator",
     description: "See your car's full ownership cost breakdown — fuel, maintenance, insurance, and more.",
+    robots: { index: false, follow: true },
   };
 
   if (!share) return fallback;
@@ -50,6 +51,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    robots: { index: false, follow: true },
     openGraph: {
       title,
       description,
