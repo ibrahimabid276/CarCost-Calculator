@@ -23,24 +23,24 @@ export const metadata: Metadata = {
       (process.env.NODE_ENV === "production" ? "https://car-cost-calculator.site" : "http://localhost:3000")
   ),
   title: {
-    default: "Car Cost Calculator Pakistan | Monthly & Yearly Ownership Cost",
+    default: "Car Cost Calculator | Calculate Your Real Car Ownership Cost",
     template: "%s | CarCost Calculator",
   },
   description:
-    "Calculate your car's monthly, yearly and long-term ownership cost in Pakistan, including fuel, maintenance, insurance, government charges, financing and cost per km.",
+    "Calculate your car's monthly, yearly, and long-term ownership costs, including fuel, maintenance, insurance, registration, and financing.",
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
   openGraph: {
     siteName: "CarCost Calculator",
     type: "website",
     locale: "en_PK",
-    title: "Car Cost Calculator Pakistan | Monthly & Yearly Ownership Cost",
+    title: "Car Cost Calculator | Calculate Your Real Car Ownership Cost",
     description:
       "Calculate your car's true monthly, yearly and long-term ownership cost — fuel, maintenance, insurance, government charges, financing and cost per km.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Car Cost Calculator Pakistan | Monthly & Yearly Ownership Cost",
+    title: "Car Cost Calculator | Calculate Your Real Car Ownership Cost",
     description:
       "Calculate your car's true monthly, yearly and long-term ownership cost — fuel, maintenance, insurance, government charges, financing and cost per km.",
   },
