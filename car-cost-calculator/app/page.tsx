@@ -107,6 +107,22 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Guides teaser */}
+      <section className="container-page py-20 border-b border-black/5 dark:border-white/10">
+        <div className="card p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div>
+            <h2 className="text-2xl font-display font-semibold">Understand the numbers first</h2>
+            <p className="mt-2 text-ink/60 max-w-lg">
+              Plain-language explainers on how car ownership cost, cost per
+              kilometer and government charges actually work in Pakistan.
+            </p>
+          </div>
+          <Link href="/guides" className="btn-primary whitespace-nowrap">
+            Car Cost Guides
+          </Link>
+        </div>
+      </section>
+
       {/* Disclaimer */}
       <section className="container-page py-14">
         <p className="text-xs text-ink/40 max-w-2xl leading-relaxed">
@@ -119,6 +135,10 @@ export default function HomePage() {
           New to this?{" "}
           <Link href="/guides/how-to-calculate-car-ownership-cost-pakistan" className="text-moss underline">
             Read how car ownership cost is calculated
+          </Link>{" "}
+          or see our full{" "}
+          <Link href="/methodology" className="text-moss underline">
+            methodology
           </Link>
           .
         </p>

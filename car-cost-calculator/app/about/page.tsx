@@ -104,6 +104,18 @@ export default function AboutPage() {
             maintenance, insurance, government charges and financing.
           </p>
 
+          <p className="mt-6 text-sm text-ink/50">
+            See also{" "}
+            <Link href="/methodology" className="text-moss underline">
+              our methodology
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-moss underline">
+              privacy policy
+            </Link>
+            .
+          </p>
+
           <div className="mt-6 flex flex-wrap gap-3">
             {LINKS.map((l) => (
               <a

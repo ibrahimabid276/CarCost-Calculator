@@ -41,9 +41,17 @@ export default function Footer() {
 
         <div className="mt-8 flex flex-col gap-3 border-t border-black/5 pt-6 text-xs text-ink/40 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} CarCost Calculator. All estimates are informational only.</p>
-          <Link href="/about" className="text-ink/40 underline-offset-2 transition-colors hover:text-ink/70 hover:underline">
-            About the Creator
-          </Link>
+          <nav className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/about" className="text-ink/40 underline-offset-2 transition-colors hover:text-ink/70 hover:underline">
+              About the Creator
+            </Link>
+            <Link href="/methodology" className="text-ink/40 underline-offset-2 transition-colors hover:text-ink/70 hover:underline">
+              Methodology
+            </Link>
+            <Link href="/privacy" className="text-ink/40 underline-offset-2 transition-colors hover:text-ink/70 hover:underline">
+              Privacy Policy
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

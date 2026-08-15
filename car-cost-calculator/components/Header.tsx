@@ -10,6 +10,7 @@ import { useTheme } from "@/lib/theme-context";
 const NAV_LINKS = [
   { href: "/calculator", label: "Calculator" },
   { href: "/compare", label: "Compare" },
+  { href: "/guides", label: "Guides" },
 ];
 
 export default function Header() {
