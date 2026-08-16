@@ -44,6 +44,9 @@ export const metadata: Metadata = {
     description:
       "Calculate your car's true monthly, yearly and long-term ownership cost — fuel, maintenance, insurance, government charges, financing and cost per km.",
   },
+  other: {
+    "google-adsense-account": "ca-pub-3210105391003754",
+  },
 };
 
 const websiteJsonLd = {
