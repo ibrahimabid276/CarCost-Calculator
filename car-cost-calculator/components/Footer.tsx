@@ -51,6 +51,9 @@ export default function Footer() {
             <Link href="/privacy" className="text-ink/40 underline-offset-2 transition-colors hover:text-ink/70 hover:underline">
               Privacy Policy
             </Link>
+            <Link href="/terms" className="text-ink/40 underline-offset-2 transition-colors hover:text-ink/70 hover:underline">
+              Terms of Use
+            </Link>
           </nav>
         </div>
       </div>

@@ -190,6 +190,32 @@ export default function CompareClient() {
           </>
         )}
       </div>
+
+      <div className="mt-16 max-w-3xl border-t border-black/5 pt-10 dark:border-white/10">
+        <h2 className="text-xl font-display font-semibold">How to read a comparison</h2>
+        <p className="mt-3 text-ink/60 leading-relaxed">
+          Every car in the comparison uses the same driving profile — same
+          daily kilometers, driving days and location — so the difference in
+          results comes from the vehicles themselves, not from different
+          assumptions. The cheapest total isn&apos;t always the cheapest to
+          fuel or maintain individually; check the full breakdown for each
+          car, not just the bottom-line monthly figure, to see where the
+          difference actually comes from.
+        </p>
+        <p className="mt-3 text-ink/60 leading-relaxed">
+          Insurance is optional here too — toggle it on or off to see whether
+          it changes which car comes out ahead. If the ranking flips, the
+          decision is more sensitive to insurance than to the cars&apos;
+          underlying running cost.
+        </p>
+        <p className="mt-3 text-sm text-ink/50">
+          For a longer walkthrough, read{" "}
+          <Link href="/guides/how-to-use-compare-cars-to-choose-between-two-vehicles" className="text-moss underline">
+            how to use Compare Cars to choose between two vehicles
+          </Link>
+          .
+        </p>
+      </div>
     </main>
   );
 }

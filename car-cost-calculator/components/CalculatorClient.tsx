@@ -65,6 +65,37 @@ export default function CalculatorClient() {
           </>
         )}
       </div>
+
+      <div className="mt-16 max-w-3xl border-t border-black/5 pt-10 dark:border-white/10">
+        <h2 className="text-xl font-display font-semibold">What this calculator works out</h2>
+        <p className="mt-3 text-ink/60 leading-relaxed">
+          Based on the vehicle and driving habits you enter, this tool
+          estimates your monthly and yearly fuel (or electricity) cost,
+          maintenance, insurance, one-time registration and annual government
+          charges, and — if you&apos;re financing — your loan installment. It
+          then combines these into a total monthly and yearly ownership cost,
+          a cost-per-kilometer figure, and 3-year and 5-year projections.
+        </p>
+        <p className="mt-3 text-ink/60 leading-relaxed">
+          Fuel price, maintenance and insurance are estimated using current
+          market information where possible, and clearly marked as estimates
+          rather than guarantees — you can always override any of them with
+          your own known figures. Government charges are split into a
+          one-time registration fee and a separate recurring annual tax, so
+          the monthly total only reflects genuinely recurring costs.
+        </p>
+        <p className="mt-3 text-sm text-ink/50">
+          Want the full explanation of how each number is worked out? Read{" "}
+          <Link href="/guides/how-to-calculate-car-ownership-cost-pakistan" className="text-moss underline">
+            how car ownership cost is calculated
+          </Link>{" "}
+          or see the{" "}
+          <Link href="/methodology" className="text-moss underline">
+            full methodology
+          </Link>
+          .
+        </p>
+      </div>
     </main>
   );
 }
